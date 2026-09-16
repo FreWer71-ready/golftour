@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-ink: #1b2a41;
+  --color-ink-soft: #454034;
+  --color-maroon: #7a2331;
+  --color-maroon-strong: #5e1a24;
+  --color-gold: #ad8642;
+  --color-gold-bright: #c6a15b;
+  --color-parchment: #f4ead1;
+  --color-paper: #fbf4e3;
+  --color-fairway: #3b4a33;
+  --color-brown: #2c1f14;
+  --color-line: rgba(44, 31, 20, 0.18);
+  --color-shadow: rgba(44, 31, 20, 0.16);
+
+  --font-display: "Abril Fatface", Georgia, serif;
+  --font-heading: "Fraunces", Georgia, serif;
+  --font-body: "Lora", Georgia, serif;
+  --font-data: "IBM Plex Mono", ui-monospace, monospace;
+  --font-label: "Special Elite", ui-monospace, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-ink: #f1e6c8;
+    --color-ink-soft: #c9bc9c;
+    --color-maroon: #c24558;
+    --color-maroon-strong: #e0687a;
+    --color-gold: #c9a15c;
+    --color-gold-bright: #e0bd7c;
+    --color-parchment: #211a11;
+    --color-paper: #15100a;
+    --color-fairway: #8fa379;
+    --color-brown: #0c0805;
+    --color-line: rgba(230, 214, 170, 0.16);
+    --color-shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
