@@ -4,6 +4,8 @@ import { getActiveTour, getClosestToPinBoard } from "@/lib/queries";
 import { formatDistance } from "@/lib/format";
 import { countWinsByPlayer } from "@/lib/scoring";
 
+export const dynamic = "force-dynamic";
+
 export default async function ClosestToPinPage() {
   const tour = await getActiveTour();
   const entries = tour ? await getClosestToPinBoard(tour.id) : [];

@@ -3,6 +3,8 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { getRound, getRoundScores } from "@/lib/queries";
 import { formatRoundDate, formatTeeTime } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function RoundDetailPage({ params }: { params: { roundId: string } }) {
   const round = await getRound(params.roundId);
   if (!round) notFound();

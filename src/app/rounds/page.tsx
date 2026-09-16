@@ -4,6 +4,8 @@ import { Chip } from "@/components/ui/Chip";
 import { getActiveTour, getRounds } from "@/lib/queries";
 import { formatRoundDate, formatTeeTime } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function RoundsPage() {
   const tour = await getActiveTour();
   const rounds = tour ? await getRounds(tour.id) : [];

@@ -12,6 +12,8 @@ import {
 } from "@/lib/queries";
 import { formatDistance, formatRoundDate, formatTeeTime } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const tour = await getActiveTour();
   if (!tour) {

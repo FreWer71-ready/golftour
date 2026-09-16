@@ -4,6 +4,8 @@ import { getActiveTour, getLongestDriveBoard } from "@/lib/queries";
 import { formatDistance } from "@/lib/format";
 import { countWinsByPlayer } from "@/lib/scoring";
 
+export const dynamic = "force-dynamic";
+
 export default async function LongestDrivePage() {
   const tour = await getActiveTour();
   const entries = tour ? await getLongestDriveBoard(tour.id) : [];

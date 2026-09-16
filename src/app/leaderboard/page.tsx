@@ -2,6 +2,8 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { Leaderboard } from "@/components/Leaderboard";
 import { getActiveTour, getTourLeaderboard } from "@/lib/queries";
 
+export const dynamic = "force-dynamic";
+
 export default async function LeaderboardPage() {
   const tour = await getActiveTour();
   const rows = tour ? await getTourLeaderboard(tour.id) : [];
