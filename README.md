@@ -24,9 +24,11 @@ mobila wireframes koden bygger på (öppna filen direkt i en webbläsare).
    riktiga banor/datum.
 5. Under **Project Settings → API**, kopiera:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY` (håll hemlig — sätts
-     bara i serverns miljövariabler, aldrig i klientkod)
+   - **anon public key** (äldre flik) eller **Publishable key**, `sb_publishable_...`
+     (nya fliken) → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **service_role key** (äldre flik) eller **Secret key**, `sb_secret_...`
+     (nya fliken, klicka ögat för att visa den) → `SUPABASE_SERVICE_ROLE_KEY`
+     (håll hemlig — sätts bara i serverns miljövariabler, aldrig i klientkod)
 
 ## 2. Konfigurera appen
 
