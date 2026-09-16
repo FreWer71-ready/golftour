@@ -1,0 +1,676 @@
+<title>Mallorca Golf Tour</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Fraunces:opsz,wght@28,500;28,600;28,700&family=IBM+Plex+Mono:wght@500;600;700&family=Lora:wght@400;500;600&family=Special+Elite&display=swap');
+
+  :root{
+    --ink:#1B2A41;
+    --ink-soft:#454034;
+    --maroon:#7A2331;
+    --maroon-strong:#5E1A24;
+    --gold:#AD8642;
+    --gold-bright:#C6A15B;
+    --parchment:#F4EAD1;
+    --paper:#FBF4E3;
+    --fairway:#3B4A33;
+    --brown:#2C1F14;
+    --line:rgba(44,31,20,0.18);
+    --shadow:rgba(44,31,20,0.16);
+    --good:#3B4A33;
+    --bad:#7A2331;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#F1E6C8;
+      --ink-soft:#C9BC9C;
+      --maroon:#C24558;
+      --maroon-strong:#E0687A;
+      --gold:#C9A15C;
+      --gold-bright:#E0BD7C;
+      --parchment:#211A11;
+      --paper:#15100A;
+      --fairway:#8FA379;
+      --brown:#0C0805;
+      --line:rgba(230,214,170,0.16);
+      --shadow:rgba(0,0,0,0.5);
+      --good:#8FA379;
+      --bad:#E0687A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#F1E6C8;
+    --ink-soft:#C9BC9C;
+    --maroon:#C24558;
+    --maroon-strong:#E0687A;
+    --gold:#C9A15C;
+    --gold-bright:#E0BD7C;
+    --parchment:#211A11;
+    --paper:#15100A;
+    --fairway:#8FA379;
+    --brown:#0C0805;
+    --line:rgba(230,214,170,0.16);
+    --shadow:rgba(0,0,0,0.5);
+    --good:#8FA379;
+    --bad:#E0687A;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Lora',Georgia,serif;
+    font-size:16px;
+    line-height:1.5;
+    padding:0 18px 64px;
+    position:relative;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:.5;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  h1,h2,h3{ font-family:'Fraunces',Georgia,serif; margin:0; text-wrap:balance; }
+
+  .stars{ letter-spacing:.6em; color:var(--gold); font-size:12px; text-align:center; }
+  .eyebrow{
+    font-family:'Special Elite',monospace;
+    font-size:13px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--maroon);
+    text-align:center;
+  }
+
+  /* ---------- page shell ---------- */
+  .wrap{ max-width:1180px; margin:0 auto; position:relative; }
+
+  .masthead{ padding:56px 0 8px; text-align:center; }
+  .masthead .stars{ margin-bottom:14px; }
+  .masthead h1{
+    font-family:'Abril Fatface',Georgia,serif;
+    font-size:clamp(34px,7vw,58px);
+    color:var(--ink);
+    line-height:1.02;
+  }
+  .masthead .sub{
+    font-family:'Special Elite',monospace;
+    font-size:14px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:12px;
+  }
+  .masthead .tagline{
+    max-width:560px; margin:18px auto 0; font-size:17px; color:var(--ink-soft); line-height:1.6;
+  }
+
+  .frame-box{
+    border:1px solid var(--gold);
+    outline:1px solid var(--gold);
+    outline-offset:4px;
+    border-radius:2px;
+  }
+
+  section{ margin-top:64px; }
+  .section-head{ text-align:center; margin-bottom:28px; }
+  .section-head .kicker{
+    font-family:'Special Elite',monospace; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--maroon);
+  }
+  .section-head h2{ font-size:clamp(22px,4vw,30px); margin-top:8px; }
+  .section-head p{ color:var(--ink-soft); font-size:16px; max-width:540px; margin:12px auto 0; }
+
+  /* ---------- design system: swatches ---------- */
+  .swatch-row{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; }
+  .swatch{
+    width:140px; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    background:var(--parchment); box-shadow:0 6px 16px var(--shadow);
+  }
+  .swatch .chip{ height:72px; }
+  .swatch .label{ padding:10px 12px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.5; }
+  .swatch .label b{ display:block; font-family:'Fraunces',serif; font-size:14.5px; font-weight:600; }
+
+  .type-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:28px;
+    background:var(--parchment); border:1px solid var(--line); border-radius:14px; padding:28px;
+    box-shadow:0 10px 24px var(--shadow);
+  }
+  .type-card .tag{ font-family:'Special Elite',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--maroon); }
+  .type-card .sample{ margin-top:8px; color:var(--ink); }
+  .type-card .display{ font-family:'Abril Fatface',serif; font-size:34px; line-height:1.05; }
+  .type-card .head{ font-family:'Fraunces',serif; font-weight:600; font-size:22px; }
+  .type-card .body{ font-family:'Lora',serif; font-size:16px; line-height:1.6; }
+  .type-card .data{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:19px; letter-spacing:.01em; font-variant-numeric:tabular-nums; }
+  .type-card .label-sample{ font-family:'Special Elite',monospace; font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
+  .type-card .meta{ margin-top:8px; font-size:13px; color:var(--ink-soft); line-height:1.5; }
+
+  /* ---------- component samples ---------- */
+  .comp-row{ display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:center; }
+  .btn{
+    font-family:'Special Elite',monospace; font-size:14px; letter-spacing:.06em; text-transform:uppercase;
+    padding:14px 22px; border-radius:8px; cursor:default; display:inline-block;
+  }
+  .btn-primary{ background:var(--maroon); color:var(--parchment); border:1px solid var(--maroon-strong); font-weight:400; }
+  .btn-secondary{ background:transparent; color:var(--ink); border:1px solid var(--gold); }
+  .chip-pill{
+    font-family:'Special Elite',monospace; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase;
+    border:1px solid var(--gold); color:var(--ink); padding:7px 13px; border-radius:999px; background:var(--parchment);
+  }
+  .chip-pill.on{ background:var(--fairway); color:var(--paper); border-color:var(--fairway); }
+  .lb-row-sample{
+    display:flex; align-items:center; gap:14px; background:var(--parchment); border:1px solid var(--line);
+    border-radius:10px; padding:12px 16px; width:min(360px,90vw);
+  }
+  .lb-rank{
+    width:32px; height:32px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px; flex:none;
+  }
+  .lb-name{ font-family:'Fraunces',serif; font-weight:600; font-size:16px; flex:1; }
+  .lb-score{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:19px; color:var(--maroon); font-variant-numeric:tabular-nums; }
+
+  /* ---------- phone gallery ---------- */
+  .phones{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:40px 28px; justify-items:center;
+  }
+  .phone-slot{ display:flex; flex-direction:column; align-items:center; gap:14px; width:100%; max-width:300px; }
+  .phone-slot .cap{
+    font-family:'Special Elite',monospace; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); text-align:center;
+  }
+  .phone{
+    width:100%; border-radius:34px; border:8px solid var(--brown); background:var(--brown);
+    box-shadow:0 16px 30px var(--shadow); overflow:hidden; position:relative;
+  }
+  .phone .notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%); width:38%; height:20px; background:var(--brown);
+    border-bottom-left-radius:12px; border-bottom-right-radius:12px; z-index:5;
+  }
+  .screen{ background:var(--paper); min-height:560px; padding:34px 14px 18px; position:relative; }
+
+  .app-h1{
+    text-align:center; font-family:'Special Elite',monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--maroon);
+  }
+  .app-h2{ text-align:center; font-family:'Abril Fatface',serif; font-size:25px; margin-top:5px; }
+  .app-stars{ text-align:center; letter-spacing:.4em; color:var(--gold); font-size:9px; margin:9px 0 16px; }
+
+  .card{
+    background:var(--parchment); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px;
+    box-shadow:0 4px 10px var(--shadow);
+  }
+  .card .k{ font-family:'Special Elite',monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--maroon); }
+  .card .v{ font-family:'Fraunces',serif; font-size:18px; font-weight:600; margin-top:4px; }
+  .card .sub{ font-size:13.5px; color:var(--ink-soft); margin-top:3px; }
+
+  .badge-frame{
+    border:1px solid var(--gold); outline:1px solid var(--gold); outline-offset:3px; border-radius:4px;
+    padding:13px; text-align:center; background:var(--parchment); margin-bottom:12px;
+  }
+  .badge-frame .k{ font-family:'Special Elite',monospace; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--maroon); }
+  .badge-frame .v{ font-family:'Fraunces',serif; font-weight:600; font-size:16.5px; margin-top:6px; }
+
+  .row{
+    display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .row:last-child{ border-bottom:none; }
+  .rank-dot{
+    width:24px; height:24px; border-radius:50%; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12px; flex:none;
+  }
+  .row .name{ font-family:'Fraunces',serif; font-weight:600; flex:1; font-size:14.5px; }
+  .row .num{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-variant-numeric:tabular-nums; font-size:15px; color:var(--maroon); }
+  .row .delta{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); flex:none; white-space:nowrap; text-align:right; }
+
+  .list-item{
+    display:flex; align-items:center; gap:10px; background:var(--parchment); border:1px solid var(--line);
+    border-radius:10px; padding:11px 12px; margin-bottom:9px;
+  }
+  .list-item .dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); flex:none; }
+  .list-item.done .dot{ background:var(--fairway); }
+  .list-item .txt{ flex:1; }
+  .list-item .txt .t1{ font-family:'Fraunces',serif; font-weight:600; font-size:14.5px; }
+  .list-item .txt .t2{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .list-item .tag{ font-family:'Special Elite',monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .list-item.done .tag{ color:var(--fairway); }
+
+  .name-card{
+    display:flex; align-items:center; gap:12px; border:1px solid var(--gold); border-radius:10px; padding:14px; margin-bottom:10px;
+    background:var(--parchment);
+  }
+  .name-card .ball{ width:16px; height:16px; border-radius:50%; border:1px solid var(--gold); flex:none;
+    background:radial-gradient(circle at 35% 30%, var(--paper), var(--parchment)); }
+  .name-card .nm{ font-family:'Fraunces',serif; font-weight:600; font-size:16px; flex:1; }
+  .name-card .go{ color:var(--gold); font-size:15px; }
+
+  table.score{ width:100%; border-collapse:collapse; font-size:14px; }
+  table.score th{
+    font-family:'Special Elite',monospace; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--maroon);
+    text-align:left; padding-bottom:7px; border-bottom:1px solid var(--gold);
+  }
+  table.score td{ padding:8px 2px; border-bottom:1px solid var(--line); font-family:'Fraunces',serif; }
+  table.score td.num{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-variant-numeric:tabular-nums; }
+
+  .field{ margin-bottom:11px; }
+  .field label{ display:block; font-family:'Special Elite',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:5px; }
+  .field .input{
+    border:1px solid var(--line); border-radius:8px; padding:10px 11px; font-family:'Lora',serif; font-size:14.5px;
+    background:var(--paper); color:var(--ink);
+  }
+
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .stat-tile{ background:var(--parchment); border:1px solid var(--line); border-radius:10px; padding:13px; text-align:center; }
+  .stat-tile .n{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:27px; color:var(--maroon); }
+  .stat-tile .l{ font-family:'Special Elite',monospace; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-soft); margin-top:4px; }
+
+  .pin-dots{ display:flex; justify-content:center; gap:14px; margin:26px 0; }
+  .pin-dot{ width:14px; height:14px; border-radius:50%; border:1px solid var(--gold); }
+  .pin-dot.filled{ background:var(--gold); }
+  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .key{
+    aspect-ratio:1; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:18px; background:var(--parchment);
+  }
+
+  .admin-row{
+    display:flex; align-items:center; gap:10px; background:var(--parchment); border:1px solid var(--line);
+    border-radius:10px; padding:14px; margin-bottom:9px;
+  }
+  .admin-row .ic{ width:26px; height:26px; flex:none; color:var(--maroon); }
+  .admin-row .t{ font-family:'Fraunces',serif; font-weight:600; font-size:14.5px; flex:1; }
+  .admin-row .chev{ color:var(--gold); }
+
+  .navbar{
+    position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-around; align-items:center;
+    padding:9px 4px 12px; border-top:1px solid var(--line); background:var(--parchment);
+  }
+  .navbar .nav-it{ display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--ink-soft); }
+  .navbar .nav-it svg{ width:18px; height:18px; }
+  .navbar .nav-it span{ font-family:'Special Elite',monospace; font-size:9px; letter-spacing:.03em; text-transform:uppercase; }
+  .navbar .nav-it.active{ color:var(--maroon); }
+  .screen{ padding-bottom:82px; }
+
+  footer{
+    margin-top:70px; text-align:center; font-family:'Special Elite',monospace; font-size:12.5px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-soft); padding-bottom:20px;
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="stars">★ ★ ★ ★ ★</div>
+    <h1>Mallorca Golf Tour</h1>
+    <div class="sub">Design System &amp; Mobila Wireframes — v0.1</div>
+    <p class="tagline">Fem vänner. Tre ronder. En digital scoretavla i samma anda som klubbhusets anslagstavla — sandfärgat papper, mässingsramar och klara, tydliga siffror, byggd för att läsas i starkt solljus.</p>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <div class="kicker">Färgpalett</div>
+      <h2>Solnedgång över Son Antem</h2>
+      <p>Hämtad direkt ur turneringsaffischen: marinblått bläck, vinröd accent, mässingsguld och åldrat scorecard-papper.</p>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch"><div class="chip" style="background:#1B2A41"></div><div class="label"><b>Ink Navy</b>#1B2A41 — rubriker, primär text</div></div>
+      <div class="swatch"><div class="chip" style="background:#7A2331"></div><div class="label"><b>Maroon</b>#7A2331 — accent, CTA, "2026"</div></div>
+      <div class="swatch"><div class="chip" style="background:#AD8642"></div><div class="label"><b>Brass Gold</b>#AD8642 — ramar, ikoner</div></div>
+      <div class="swatch"><div class="chip" style="background:#F4EAD1"></div><div class="label"><b>Parchment</b>#F4EAD1 — kort, ytor</div></div>
+      <div class="swatch"><div class="chip" style="background:#FBF4E3"></div><div class="label"><b>Paper</b>#FBF4E3 — appbakgrund</div></div>
+      <div class="swatch"><div class="chip" style="background:#3B4A33"></div><div class="label"><b>Fairway</b>#3B4A33 — positiv status, "spelad"</div></div>
+      <div class="swatch"><div class="chip" style="background:#2C1F14"></div><div class="label"><b>Leather Brown</b>#2C1F14 — telefonram, djupa kanter</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="kicker">Typografi</div>
+      <h2>Klubbhus-serif möter tydliga siffror</h2>
+      <p>Fem roller. Siffror och resultat får ett rent, högläsbart mono-typsnitt istället för dekorativ skrivmaskinsstil — avgörande i starkt solljus.</p>
+    </div>
+    <div class="type-grid">
+      <div class="type-card">
+        <div class="tag">Display — Abril Fatface</div>
+        <div class="sample display">Mallorca</div>
+        <div class="meta">Tornamnet, stora rubriker, ett fåtal ord per skärm — aldrig löpande text eller siffror.</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">Rubrik — Fraunces</div>
+        <div class="sample head">Total leaderboard</div>
+        <div class="meta">Sektionsrubriker, spelarnamn, kortrubriker.</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">Brödtext — Lora</div>
+        <div class="sample body">Ditt namn sparas i den här webbläsaren så du slipper välja igen nästa gång.</div>
+        <div class="meta">Beskrivningar, hjälptext, längre stycken. Aldrig under 15px.</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">Data — IBM Plex Mono</div>
+        <div class="sample data">141 · +2 · 268 M</div>
+        <div class="meta">Alla resultat, poäng, avstånd och tee times. Hög x-höjd och tydliga siffror för läsbarhet i solljus.</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">Etikett — Special Elite</div>
+        <div class="sample label-sample">Hål 14 · Kommande</div>
+        <div class="meta">Korta versalrubriker och statustaggar — skrivmaskinskänslan från scorecardet, aldrig för faktiska resultat.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="kicker">Komponenter</div>
+      <h2>Byggklossar</h2>
+    </div>
+    <div class="comp-row" style="margin-bottom:22px;">
+      <span class="btn btn-primary">Registrera resultat</span>
+      <span class="btn btn-secondary">Avbryt</span>
+      <span class="chip-pill">Kommande</span>
+      <span class="chip-pill on">Spelad</span>
+    </div>
+    <div class="comp-row">
+      <div class="lb-row-sample">
+        <div class="lb-rank">1</div>
+        <div class="lb-name">Fredrik von Carlsburg</div>
+        <div class="lb-score">141</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="kicker">Wireframes · Mobil</div>
+      <h2>Åtta skärmar, en tour</h2>
+      <p>Ingen inloggning — spelaren väljer sitt namn en gång. Admin-läge gömt bakom PIN-kod för resultatregistrering.</p>
+    </div>
+
+    <div class="phones">
+
+      <!-- 1. Name select -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">Börs · Birdies · Bärs</div>
+            <div class="app-h2">Vem är du?</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+            <div class="name-card"><div class="ball"></div><div class="nm">Fredrik Wernqvist</div><div class="go">›</div></div>
+            <div class="name-card"><div class="ball"></div><div class="nm">Fredrik Wetterling</div><div class="go">›</div></div>
+            <div class="name-card"><div class="ball"></div><div class="nm">Fredrik von Carlsburg</div><div class="go">›</div></div>
+            <div class="name-card"><div class="ball"></div><div class="nm">Mathias Axelsson</div><div class="go">›</div></div>
+            <div class="name-card"><div class="ball"></div><div class="nm">Mats Hagman</div><div class="go">›</div></div>
+            <div class="card" style="text-align:center;"><div class="sub" style="margin-top:0;">Ditt val sparas i den här webbläsaren</div></div>
+          </div>
+        </div>
+        <div class="cap">01 — Välj spelare</div>
+      </div>
+
+      <!-- 2. Dashboard -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">17–21 September · Son Antem</div>
+            <div class="app-h2">Mallorca Golf Tour</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+
+            <div class="card">
+              <div class="k">Total leaderboard</div>
+              <div class="row" style="margin-top:8px;"><div class="rank-dot">1</div><div class="name">F. von Carlsburg</div><div class="num">141</div><div class="delta">Ledare</div></div>
+              <div class="row"><div class="rank-dot">2</div><div class="name">F. Wernqvist</div><div class="num">143</div><div class="delta">+2</div></div>
+              <div class="row"><div class="rank-dot">3</div><div class="name">F. Wetterling</div><div class="num">143</div><div class="delta">+2</div></div>
+              <div class="sub" style="margin-top:8px;">Visa alla 5 →</div>
+            </div>
+
+            <div class="card">
+              <div class="k">Nästa rond</div>
+              <div class="v">Golf de Andratx</div>
+              <div class="sub">Lördag 19 sep · Tee 11:50</div>
+            </div>
+
+            <div class="card">
+              <div class="k">Senaste resultat</div>
+              <div class="v">Son Antem West</div>
+              <div class="sub">Vinnare (netto): F. von Carlsburg, 65</div>
+            </div>
+
+            <div class="badge-frame">
+              <div class="k">Longest Drive-ledare</div>
+              <div class="v">Mathias Axelsson · Hål 14</div>
+            </div>
+            <div class="badge-frame">
+              <div class="k">Closest to Pin-ledare</div>
+              <div class="v">Mats Hagman · Hål 7</div>
+            </div>
+          </div>
+          <div class="navbar">
+            <div class="nav-it active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V10l8-6 8 6v10"/><path d="M9 20v-6h6v6"/></svg><span>Hem</span></div>
+            <div class="nav-it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="1.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>Ronder</span></div>
+            <div class="nav-it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 3v18M3 12h18" opacity=".4"/></svg><span>Drive</span></div>
+            <div class="nav-it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.2"/></svg><span>Pin</span></div>
+            <div class="nav-it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V11M10 20V4M16 20v-7M22 20v3" stroke-linecap="round"/></svg><span>Statistik</span></div>
+          </div>
+        </div>
+        <div class="cap">02 — Dashboard</div>
+      </div>
+
+      <!-- 3. Rounds list -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">Tre ronder · En tour</div>
+            <div class="app-h2">Ronder</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+
+            <div class="list-item done">
+              <div class="dot"></div>
+              <div class="txt"><div class="t1">Son Antem West</div><div class="t2">Fre 18 sep · Tee 10:10</div></div>
+              <div class="tag">Spelad</div>
+            </div>
+            <div class="list-item">
+              <div class="dot"></div>
+              <div class="txt"><div class="t1">Golf de Andratx</div><div class="t2">Lör 19 sep · Tee 11:50</div></div>
+              <div class="tag">Kommande</div>
+            </div>
+            <div class="list-item">
+              <div class="dot"></div>
+              <div class="txt"><div class="t1">Son Antem East</div><div class="t2">Mån 21 sep · Tee 07:40</div></div>
+              <div class="tag">Kommande</div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+              <div class="k">Poängsystem</div>
+              <div class="sub" style="margin-top:4px;">Placering ger tourpoäng · redigeras av admin</div>
+            </div>
+          </div>
+        </div>
+        <div class="cap">03 — Ronder, översikt</div>
+      </div>
+
+      <!-- 4. Round detail / score entry -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">Fre 18 sep · Tee 10:10</div>
+            <div class="app-h2">Son Antem West</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+
+            <table class="score">
+              <tr><th>Spelare</th><th>Brutto</th><th>Netto</th><th>Plac.</th></tr>
+              <tr><td>F. von Carlsburg</td><td class="num">69</td><td class="num">65</td><td class="num">1</td></tr>
+              <tr><td>F. Wernqvist</td><td class="num">72</td><td class="num">67</td><td class="num">2</td></tr>
+              <tr><td>F. Wetterling</td><td class="num">73</td><td class="num">69</td><td class="num">3</td></tr>
+              <tr><td>M. Hagman</td><td class="num">74</td><td class="num">70</td><td class="num">4</td></tr>
+              <tr><td>M. Axelsson</td><td class="num">71</td><td class="num">71</td><td class="num">5</td></tr>
+            </table>
+
+            <div style="margin-top:16px;" class="field">
+              <label>Redigera brutto — F. von Carlsburg</label>
+              <div class="input">69</div>
+            </div>
+            <span class="btn btn-primary" style="width:100%;text-align:center;display:block;">Spara resultat</span>
+          </div>
+        </div>
+        <div class="cap">04 — Rond­detalj &amp; registrering (admin)</div>
+      </div>
+
+      <!-- 5. Longest Drive -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">2026 Awards</div>
+            <div class="app-h2">Longest Drive</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+
+            <div class="badge-frame">
+              <div class="k">Aktuell segrare</div>
+              <div class="v">Mathias Axelsson</div>
+              <div class="sub">Hål 14 · 268 m · Son Antem West</div>
+            </div>
+
+            <div class="card">
+              <div class="k">Segrar denna tour</div>
+              <div class="row" style="margin-top:8px;"><div class="rank-dot">1</div><div class="name">Mathias Axelsson</div><div class="num">2</div></div>
+              <div class="row"><div class="rank-dot">2</div><div class="name">Mats Hagman</div><div class="num">1</div></div>
+              <div class="row"><div class="rank-dot">3</div><div class="name">F. Wernqvist</div><div class="num">1</div></div>
+            </div>
+
+            <div class="field"><label>Hål</label><div class="input">Hål 14</div></div>
+            <div class="field"><label>Vinnare</label><div class="input">Mathias Axelsson</div></div>
+            <div class="field"><label>Längd (valfritt)</label><div class="input">268 m</div></div>
+            <span class="btn btn-primary" style="width:100%;text-align:center;display:block;">Registrera</span>
+          </div>
+        </div>
+        <div class="cap">05 — Longest Drive</div>
+      </div>
+
+      <!-- 6. Closest to Pin -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">2026 Awards</div>
+            <div class="app-h2">Closest to Pin</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+
+            <div class="badge-frame">
+              <div class="k">Aktuell segrare</div>
+              <div class="v">Mats Hagman</div>
+              <div class="sub">Hål 7 · 2,4 m · Son Antem West</div>
+            </div>
+
+            <div class="card">
+              <div class="k">Segrar denna tour</div>
+              <div class="row" style="margin-top:8px;"><div class="rank-dot">1</div><div class="name">Mats Hagman</div><div class="num">1</div></div>
+              <div class="row"><div class="rank-dot">2</div><div class="name">F. von Carlsburg</div><div class="num">1</div></div>
+            </div>
+
+            <div class="field"><label>Hål</label><div class="input">Hål 7</div></div>
+            <div class="field"><label>Vinnare</label><div class="input">Mats Hagman</div></div>
+            <div class="field"><label>Avstånd</label><div class="input">2,4 m</div></div>
+            <span class="btn btn-primary" style="width:100%;text-align:center;display:block;">Registrera</span>
+          </div>
+        </div>
+        <div class="cap">06 — Closest to Pin</div>
+      </div>
+
+      <!-- 7. Stats -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">Spelare</div>
+            <div class="app-h2">Statistik</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+
+            <div class="comp-row" style="justify-content:flex-start;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+              <span class="chip-pill on">F. v. Carlsburg</span>
+              <span class="chip-pill">F. Wernqvist</span>
+              <span class="chip-pill">Mats Hagman</span>
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat-tile"><div class="n">1</div><div class="l">Totalpoäng</div></div>
+              <div class="stat-tile"><div class="n">1</div><div class="l">Vunna rundor</div></div>
+              <div class="stat-tile"><div class="n">0</div><div class="l">Longest Drive</div></div>
+              <div class="stat-tile"><div class="n">1</div><div class="l">Closest to Pin</div></div>
+            </div>
+            <div class="card" style="margin-top:12px;">
+              <div class="k">Snittplacering</div>
+              <div class="v">1,0</div>
+              <div class="sub">Efter 1 av 3 ronder</div>
+            </div>
+          </div>
+        </div>
+        <div class="cap">07 — Statistik</div>
+      </div>
+
+      <!-- 8. Admin PIN -->
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">Klubbhuset</div>
+            <div class="app-h2">Admin-läge</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+            <div class="sub" style="text-align:center;">Ange PIN-koden för att registrera resultat</div>
+            <div class="pin-dots">
+              <div class="pin-dot filled"></div><div class="pin-dot filled"></div><div class="pin-dot filled"></div><div class="pin-dot"></div>
+            </div>
+            <div class="keypad">
+              <div class="key">1</div><div class="key">2</div><div class="key">3</div>
+              <div class="key">4</div><div class="key">5</div><div class="key">6</div>
+              <div class="key">7</div><div class="key">8</div><div class="key">9</div>
+              <div class="key"></div><div class="key">0</div><div class="key">⌫</div>
+            </div>
+          </div>
+        </div>
+        <div class="cap">08 — Admin: PIN-lås</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="kicker">Wireframe · Admin</div>
+      <h2>Klubbhusets bakre rum</h2>
+      <p>Efter godkänd PIN får admin fyra registreringsverktyg och poängsystemet, i övrigt identisk app.</p>
+    </div>
+    <div class="phones" style="grid-template-columns:repeat(auto-fit,minmax(280px,300px));">
+      <div class="phone-slot">
+        <div class="phone"><div class="notch"></div>
+          <div class="screen">
+            <div class="app-h1">Inloggad som admin</div>
+            <div class="app-h2">Adminpanel</div>
+            <div class="app-stars">★ ★ ★ ★ ★</div>
+
+            <div class="admin-row">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="1.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+              <div class="t">Skapa / redigera rond</div><div class="chev">›</div>
+            </div>
+            <div class="admin-row">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V11M10 20V4M16 20v-7M22 20v3" stroke-linecap="round"/></svg>
+              <div class="t">Registrera resultat</div><div class="chev">›</div>
+            </div>
+            <div class="admin-row">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 3v18M3 12h18" opacity=".4"/></svg>
+              <div class="t">Registrera Longest Drive</div><div class="chev">›</div>
+            </div>
+            <div class="admin-row">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.2"/></svg>
+              <div class="t">Registrera Closest to Pin</div><div class="chev">›</div>
+            </div>
+            <div class="admin-row">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              <div class="t">Ändra poängsystem</div><div class="chev">›</div>
+            </div>
+            <div class="card" style="margin-top:16px;text-align:center;">
+              <span class="btn btn-secondary">Logga ut ur admin-läge</span>
+            </div>
+          </div>
+        </div>
+        <div class="cap">09 — Adminpanel</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Mallorca Golf Tour 2026 · Design v0.1 · Nästa steg: arkitektur, databasmodell &amp; produktionskod</footer>
+</div>
