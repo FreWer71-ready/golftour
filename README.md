@@ -6,7 +6,9 @@ inloggning för spelarna, med ett PIN-skyddat adminläge för att registrera
 resultat.
 
 Se [ARCHITECTURE.md](ARCHITECTURE.md) för produktarkitektur, databasmodell,
-ER-diagram och projektstruktur, och [MVP.md](MVP.md) för byggordning.
+ER-diagram och projektstruktur, [MVP.md](MVP.md) för byggordning, och
+[design/wireframes.html](design/wireframes.html) för designsystemet och de
+mobila wireframes koden bygger på (öppna filen direkt i en webbläsare).
 
 ## 1. Skapa Supabase-projektet
 
