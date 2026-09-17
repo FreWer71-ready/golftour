@@ -8,9 +8,11 @@ lägga in resultat direkt. Byggordning, inte tidsuppskattning:
 - [x] Databasschema + RLS + vyer för leaderboard/statistik (`supabase/migrations`)
 - [x] Designsystem: färger, typsnitt, komponenter (Tailwind-tokens från wireframen)
 - [x] Namnval + lokal lagring av spelare, ingen inloggning
-- [x] Dashboard: total leaderboard, pågående tävling, live-tabell för LD/CTP, nästa tävling
-- [x] Ronder: lista + ny-rond-formulär + detaljvy med scorecard och resultatregistrering
-- [x] Longest Drive / Closest to Pin: aktuell segrare, historik och registrering — öppet för alla
+- [x] Dashboard: total leaderboard, poängtävling, pågående tävling, live-tabell för LD/CTP, nästa tävling
+- [x] Ronder: lista + ny-rond-formulär + detaljvy med scorecard, LD/CTP och resultatregistrering
+- [x] Longest Drive / Closest to Pin: egen deltävling per rond (ett resultat per
+      spelare, delat hål, automatiskt rangordnad) — öppet för alla
+- [x] Poängtävling: fast 10/8/6/4/2-skala över varje rond + varje ronds LD/CTP
 - [x] Statistik per spelare
 - [x] Öppen resultatregistrering: ingen PIN, ingen adminroll — brutto + handikap
       in, nettot (resultatet) räknas fram automatiskt

@@ -3,7 +3,8 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { Chip } from "@/components/ui/Chip";
 import { RoundForm } from "@/components/forms/RoundForm";
 import { ScoreEntryForm } from "@/components/forms/ScoreEntryForm";
-import { getPlayers, getRound, getRoundScores } from "@/lib/queries";
+import { AwardEntryForm } from "@/components/forms/AwardEntryForm";
+import { getPlayers, getRound, getRoundAwards, getRoundScores } from "@/lib/queries";
 import { formatRoundDate, formatTeeTime } from "@/lib/format";
 import { ROUND_STATUS_LABEL, ROUND_STATUS_TONE } from "@/lib/round-status";
 
@@ -13,7 +14,12 @@ export default async function RoundDetailPage({ params }: { params: { roundId: s
   const round = await getRound(params.roundId);
   if (!round) notFound();
 
-  const [scores, players] = await Promise.all([getRoundScores(round.id), getPlayers()]);
+  const [scores, players, longestDrives, closestToPins] = await Promise.all([
+    getRoundScores(round.id),
+    getPlayers(),
+    getRoundAwards(round.id, "longest_drive"),
+    getRoundAwards(round.id, "closest_to_pin"),
+  ]);
 
   return (
     <div className="mx-auto max-w-sm px-4 pt-10 pb-10">
@@ -71,8 +77,64 @@ export default async function RoundDetailPage({ params }: { params: { roundId: s
       </p>
       <ScoreEntryForm roundId={round.id} players={players} existingScores={scores} roundStatus={round.status} />
 
+      <h2 className="mb-3 mt-9 font-heading text-lg font-semibold">Longest Drive</h2>
+      <AwardTable entries={longestDrives} unit="m" />
+      <AwardEntryForm
+        kind="longest_drive"
+        roundId={round.id}
+        players={players}
+        existingEntries={longestDrives}
+      />
+
+      <h2 className="mb-3 mt-9 font-heading text-lg font-semibold">Closest to Pin</h2>
+      <AwardTable entries={closestToPins} unit="m" />
+      <AwardEntryForm
+        kind="closest_to_pin"
+        roundId={round.id}
+        players={players}
+        existingEntries={closestToPins}
+      />
+
       <h2 className="mb-3 mt-9 font-heading text-lg font-semibold">Rondinformation</h2>
       <RoundForm tourId={round.tour_id} round={round} nextSortOrder={round.sort_order} />
     </div>
+  );
+}
+
+function AwardTable({
+  entries,
+  unit,
+}: {
+  entries: Array<{ id: string; player_name: string; distance_m: number; position: number }>;
+  unit: string;
+}) {
+  if (entries.length === 0) return null;
+  return (
+    <table className="mb-4 w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th className="pb-2 text-left font-label text-[10.5px] uppercase tracking-wide text-maroon">
+            Spelare
+          </th>
+          <th className="pb-2 text-left font-label text-[10.5px] uppercase tracking-wide text-maroon">
+            Resultat
+          </th>
+          <th className="pb-2 text-left font-label text-[10.5px] uppercase tracking-wide text-maroon">
+            Plac.
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {entries.map((entry) => (
+          <tr key={entry.id} className="border-b border-line">
+            <td className="py-2 font-heading">{entry.player_name}</td>
+            <td className="py-2 font-data font-semibold tabular-nums text-maroon">
+              {entry.distance_m} {unit}
+            </td>
+            <td className="py-2 font-data font-semibold tabular-nums">{entry.position}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

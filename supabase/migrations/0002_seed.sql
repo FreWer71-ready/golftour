@@ -1,7 +1,7 @@
 -- Optional starter data for Mallorca Golf Tour 2026 — matches the tour poster
 -- (players, courses, tee times) so the app has something real to show on day
 -- one. Safe to edit or delete before your own tour: everything here is also
--- editable later from the admin panel. Plain SQL only, so it runs as-is in
+-- editable later, directly in the app. Plain SQL only, so it runs as-is in
 -- the Supabase dashboard's SQL editor, not just via psql/CLI.
 
 insert into tours (name, start_date, end_date, location, is_active)
@@ -23,16 +23,6 @@ join (
     ('Golf de Andratx', '2026-09-19', '11:50', 'upcoming', 2),
     ('Son Antem East', '2026-09-21', '07:40', 'upcoming', 3)
 ) as v(course_name, round_date, tee_time, status, sort_order) on true
-where t.name = 'Mallorca Golf Tour 2026';
-
--- Default tour points by finishing position — edit any time from
--- Admin -> Ändra poängsystem.
-insert into scoring_rules (tour_id, position, points)
-select t.id, v.position, v.points
-from tours t
-join (
-  values (1, 10), (2, 7), (3, 5), (4, 3), (5, 2), (6, 1), (7, 1), (8, 1)
-) as v(position, points) on true
 where t.name = 'Mallorca Golf Tour 2026';
 
 -- Round 1 (Son Antem West) results, taken from the tour scorecard.

@@ -39,17 +39,20 @@ på ett ställe.
 | `tours`            | En golfresa (t.ex. "Mallorca Golf Tour 2026"). En är `is_active`. |
 | `rounds`           | En rond: bana, datum, tee time, status (`upcoming`/`ongoing`/`completed`). |
 | `round_scores`     | En spelares brutto/handikap för en rond. `net_score` (resultatet) är en genererad kolumn (`gross - handicap`) — det är den som räknas i leaderboard. |
-| `longest_drive`    | En registrering: rond, hål, spelare, längd (valfri).           |
+| `longest_drive`    | Ett mätt resultat per spelare och rond (delad hål, `unique(round_id, player_id)`) — en egen deltävling per rond, inte bara en enda vinnare. |
 | `closest_to_pin`   | Samma form som ovan, för närmast hål.                          |
-| `scoring_rules`    | Poäng per placering för touren (redigerbar av alla på `/scoring`). |
 
 **Beräknade vyer** (aldrig lagrade, kan aldrig hamna i otakt med källdatan):
 
-- `round_scores_ranked` — placering per rond, rankad på nettoscore.
-- `round_points` — poäng per spelare/rond, från placering × `scoring_rules`.
-- `tour_leaderboard` — totalställning (summa nettoscore över spelade ronder).
-- `player_tour_stats` — allt till Statistik-vyn: totalpoäng, vunna ronder,
-  LD-/CTP-segrar, snittplacering.
+- `round_scores_ranked` / `longest_drive_ranked` / `closest_to_pin_ranked` —
+  placering per rond, för respektive deltävling.
+- `tour_points` — varje poänggivande placering (rond + LD + CTP) på den
+  fasta 10/8/6/4/2-skalan (`fixed_points()`).
+- `points_leaderboard` — poängtävlingen: summa `tour_points` per spelare.
+- `tour_leaderboard` — den klassiska totalställningen (summa nettoscore
+  över spelade ronder) — separat från poängtävlingen.
+- `player_tour_stats` — allt till Statistik-vyn: totalpoäng (från
+  `tour_points`), vunna ronder, LD-/CTP-segrar, snittplacering.
 
 Se [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) för
 det körbara schemat och [`0002_seed.sql`](supabase/migrations/0002_seed.sql)
@@ -60,13 +63,12 @@ för exempeldata som speglar turneringsaffischen.
 ```mermaid
 erDiagram
     TOURS ||--o{ ROUNDS : has
-    TOURS ||--o{ SCORING_RULES : defines
     ROUNDS ||--o{ ROUND_SCORES : has
     ROUNDS ||--o{ LONGEST_DRIVE : has
     ROUNDS ||--o{ CLOSEST_TO_PIN : has
     PLAYERS ||--o{ ROUND_SCORES : plays
-    PLAYERS ||--o{ LONGEST_DRIVE : wins
-    PLAYERS ||--o{ CLOSEST_TO_PIN : wins
+    PLAYERS ||--o{ LONGEST_DRIVE : plays
+    PLAYERS ||--o{ CLOSEST_TO_PIN : plays
 
     TOURS {
         uuid id PK
@@ -102,7 +104,7 @@ erDiagram
         uuid round_id FK
         uuid player_id FK
         int hole
-        numeric distance_m "optional"
+        numeric distance_m
     }
     CLOSEST_TO_PIN {
         uuid id PK
@@ -111,26 +113,26 @@ erDiagram
         int hole
         numeric distance_m
     }
-    SCORING_RULES {
-        uuid id PK
-        uuid tour_id FK
-        int position
-        int points
-    }
 ```
 
 ## 4. Resultatregistrering — öppen för alla, inga konton
 
 Det finns ingen adminroll och ingen PIN. Formulären för att skapa/redigera
-ronder, registrera resultat, Longest Drive, Closest to Pin och ändra
-poängsystemet ligger direkt på de publika sidorna (`/rounds/[roundId]`,
-`/longest-drive`, `/closest-to-pin`, `/scoring`) — vem som helst med länken
+ronder och registrera resultat, Longest Drive och Closest to Pin ligger
+direkt på rondens egen sida (`/rounds/[roundId]`) — vem som helst med länken
 till appen kan använda dem, när som helst under resan.
 
 Resultatregistreringen är designad kring **brutto in, netto ut**: formuläret
 tar emot bruttoslag och handikap per spelare; `net_score` — resultatet som
 räknas i leaderboard, placering och statistik — räknas alltid fram av
 databasen (`gross_score - handicap_strokes`), aldrig matas in direkt.
+
+Longest Drive och Closest to Pin är egna deltävlingar per rond: alla mäts på
+samma hål, ett resultat per spelare, rankade mot varandra precis som
+scorekortet — inte bara en enda "vinnare" som förr. Poängtävlingen
+(`/points`) summerar en fast 10/8/6/4/2-skala över varje rond **och** varje
+runda Longest Drive/Closest to Pin — separat från den klassiska
+slagspel-totalställningen på `/leaderboard`.
 
 Server Actions (`src/app/actions.ts`) körs fortfarande via Supabase
 **service role**-nyckeln istället för att låta klienten skriva direkt mot
@@ -160,19 +162,18 @@ mallorca-golf-tour/
 │   │   ├── globals.css        Designtoken (CSS-variabler), Tailwind-lager
 │   │   ├── page.tsx           Namnval (om inget namn valt) / redirect
 │   │   ├── actions.ts         Alla Server Actions (skapa rond, spara resultat, ...)
-│   │   ├── dashboard/         Dashboard: leaderboard, pågående/nästa rond, live-awards
-│   │   ├── rounds/            Ronder: lista + ny-rond-formulär, [roundId]-detalj + resultat
-│   │   ├── longest-drive/     Longest Drive: ställning + registreringsformulär
-│   │   ├── closest-to-pin/    Closest to Pin: ställning + registreringsformulär
-│   │   ├── scoring/           Poängsystem (poäng per placering)
+│   │   ├── dashboard/         Dashboard: leaderboard, poäng, pågående/nästa rond, live-awards
+│   │   ├── rounds/            Ronder: lista + ny-rond-formulär, [roundId]-detalj + alla resultat
+│   │   ├── longest-drive/     Longest Drive: ställning + rond-för-rond-tabell
+│   │   ├── closest-to-pin/    Closest to Pin: ställning + rond-för-rond-tabell
+│   │   ├── points/            Poängtävlingen (10/8/6/4/2, rond + LD + CTP)
 │   │   └── stats/             Statistik
-│   ├── components/            UI-byggklossar (Leaderboard, LiveAwardsTable, ...)
-│   │   └── forms/              RoundForm, ScoreEntryForm, AwardForm, ScoringForm
+│   ├── components/            UI-byggklossar (Leaderboard, PointsLeaderboard, LiveAwardsTable, ...)
+│   │   └── forms/              RoundForm, ScoreEntryForm, AwardEntryForm
 │   └── lib/
 │       ├── supabase/          Browser-, server- och service-role-klienter
 │       ├── types/             Handskrivna databastyper
 │       ├── round-status.ts    Etikett/färg per rondstatus (upcoming/ongoing/completed)
-│       ├── scoring.ts         Ren beräkningslogik (delas av UI och tester)
 │       └── player.ts          localStorage-hjälpare för valt namn
 └── ARCHITECTURE.md / MVP.md / README.md
 ```

@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Leaderboard } from "@/components/Leaderboard";
+import { PointsLeaderboard } from "@/components/PointsLeaderboard";
 import { LiveAwardsTable } from "@/components/LiveAwardsTable";
 import { Card, CardLabel, CardSub, CardValue } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import {
   getActiveTour,
-  getClosestToPinBoard,
-  getLongestDriveBoard,
+  getClosestToPinLeader,
+  getLongestDriveLeader,
+  getPointsLeaderboard,
   getRounds,
   getTourLeaderboard,
 } from "@/lib/queries";
@@ -27,11 +29,12 @@ export default async function DashboardPage() {
     );
   }
 
-  const [rounds, leaderboard, longestDrives, closestToPins] = await Promise.all([
+  const [rounds, leaderboard, pointsLeaderboard, longestDriveLeader, closestToPinLeader] = await Promise.all([
     getRounds(tour.id),
     getTourLeaderboard(tour.id),
-    getLongestDriveBoard(tour.id),
-    getClosestToPinBoard(tour.id),
+    getPointsLeaderboard(tour.id),
+    getLongestDriveLeader(tour.id),
+    getClosestToPinLeader(tour.id),
   ]);
 
   const ongoingRound = rounds.find((round) => round.status === "ongoing");
@@ -46,13 +49,25 @@ export default async function DashboardPage() {
       <ScreenHeader eyebrow={dateRange} title={tour.name} />
 
       <Card>
-        <CardLabel>Total leaderboard</CardLabel>
+        <CardLabel>Total leaderboard · slag</CardLabel>
         <div className="mt-2">
           <Leaderboard rows={leaderboard} limit={3} />
         </div>
         {leaderboard.length > 3 && (
           <Link href="/leaderboard" className="mt-2 block text-sm text-ink-soft">
             Visa alla {leaderboard.length} →
+          </Link>
+        )}
+      </Card>
+
+      <Card>
+        <CardLabel>Poängtävling · 10-8-6-4-2</CardLabel>
+        <div className="mt-2">
+          <PointsLeaderboard rows={pointsLeaderboard} limit={3} />
+        </div>
+        {pointsLeaderboard.length > 3 && (
+          <Link href="/points" className="mt-2 block text-sm text-ink-soft">
+            Visa alla {pointsLeaderboard.length} →
           </Link>
         )}
       </Card>
@@ -76,7 +91,7 @@ export default async function DashboardPage() {
         </Card>
       )}
 
-      <LiveAwardsTable longestDrive={longestDrives[0]} closestToPin={closestToPins[0]} />
+      <LiveAwardsTable longestDrive={longestDriveLeader} closestToPin={closestToPinLeader} />
 
       {nextRound && (
         <Card>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Card, CardLabel, CardSub, CardValue } from "@/components/ui/Card";
@@ -42,6 +43,9 @@ export function StatsView({ stats, roundsInTour }: { stats: PlayerTourStats[]; r
             <StatTile value={selected.longest_drive_wins} label="Longest Drive" />
             <StatTile value={selected.closest_to_pin_wins} label="Closest to Pin" />
           </div>
+          <Link href="/points" className="mt-3 block text-center text-sm text-ink-soft underline">
+            Visa hela poängtävlingen →
+          </Link>
           <Card className="mt-3">
             <CardLabel>Snittplacering</CardLabel>
             <CardValue>{selected.avg_position ?? "–"}</CardValue>

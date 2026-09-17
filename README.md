@@ -1,9 +1,9 @@
 # Mallorca Golf Tour
 
 En enkel, mobilanpassad app för en privat golftour (4–20 deltagare):
-leaderboard, ronder, Longest Drive, Closest to Pin och statistik. Ingen
-inloggning — vem som helst i gruppen kan registrera resultat, när som helst,
-direkt på respektive sida.
+totalleaderboard, en poängtävling (10/8/6/4/2 per rond + Longest Drive +
+Closest to Pin), ronder, och statistik. Ingen inloggning — vem som helst i
+gruppen kan registrera resultat, när som helst, direkt på respektive sida.
 
 Se [ARCHITECTURE.md](ARCHITECTURE.md) för produktarkitektur, databasmodell,
 ER-diagram och projektstruktur, [MVP.md](MVP.md) för byggordning, och
@@ -23,9 +23,12 @@ mobila wireframes koden bygger på (öppna filen direkt i en webbläsare).
    turneringsaffischen. Redigera gärna filen först om ni redan vet era
    riktiga banor/datum.
    - Har du redan kört `0001_init.sql` en gång tidigare (innan
-     "Pågående"-status för ronder fanns)? Kör även
-     [`supabase/migrations/0003_round_ongoing_status.sql`](supabase/migrations/0003_round_ongoing_status.sql).
-     Nya projekt behöver inte det — det ingår redan i `0001_init.sql`.
+     "Pågående"-status för ronder och poängtävlingen fanns)? Kör även, i
+     ordning:
+     [`0003_round_ongoing_status.sql`](supabase/migrations/0003_round_ongoing_status.sql)
+     och
+     [`0004_points_competition.sql`](supabase/migrations/0004_points_competition.sql).
+     Nya projekt behöver inte det — allt ingår redan i `0001_init.sql`.
 5. Under **Project Settings → API**, kopiera:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon public key** (äldre flik) eller **Publishable key**, `sb_publishable_...`
@@ -69,8 +72,13 @@ Ingen adminroll, ingen PIN — vem som helst med länken kan när som helst:
 - Skapa/redigera ronder (bana, datum, tee time, status: Kommande/Pågående/Spelad) — på **Ronder**
 - Registrera resultat: bruttoslag + handikap in, resultatet (brutto − handikap)
   räknas automatiskt och är det som gäller i leaderboard — på respektive rond
-- Registrera Longest Drive och Closest to Pin — på respektive sida
-- Ändra poängsystemet (poäng per placering) — länk längst ner på **Ronder**
+- Registrera Longest Drive och Closest to Pin — ett mätt resultat per spelare,
+  samma hål för alla, direkt på respektive rond. Rangordnas automatiskt.
+
+Poängtävlingen (**/points**, eller kortet på Hem) ger 10/8/6/4/2 poäng för
+plats 1–5 i varje rond **och** varje ronds Longest Drive och Closest to Pin —
+fast skala, inte redigerbar. Totalleaderboard (**/leaderboard**) är separat:
+klassiskt slagspel, summa nettoscore.
 
 Alla ändringar syns direkt hos alla andra öppna telefoner via Supabase
 Realtime — ingen behöver dra ner för att uppdatera.

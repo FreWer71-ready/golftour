@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAdminSupabase } from "@/lib/supabase/admin";
-import type { RoundStatus } from "@/lib/types/database";
+import type { AwardKind, RoundStatus } from "@/lib/types/database";
 
 // Every write in this file goes through the Supabase service role key (never
 // exposed to the browser) instead of the public anon key, purely so writes
@@ -16,11 +16,11 @@ export type ActionResultWithId = { ok: true; id: string } | { ok: false; error: 
 function revalidatePublicPages() {
   revalidatePath("/dashboard");
   revalidatePath("/leaderboard");
+  revalidatePath("/points");
   revalidatePath("/rounds");
   revalidatePath("/longest-drive");
   revalidatePath("/closest-to-pin");
   revalidatePath("/stats");
-  revalidatePath("/scoring");
 }
 
 // ---------------------------------------------------------------------------
@@ -109,70 +109,43 @@ export async function saveRoundScores(
 }
 
 // ---------------------------------------------------------------------------
-// Longest drive / closest to pin
+// Longest drive / closest to pin — one shared hole per round, one measured
+// result per player. Ranked automatically (longest/closest wins) and paid
+// out on the same fixed 10/8/6/4/2 points scale as the rounds themselves.
 // ---------------------------------------------------------------------------
 
-export async function recordLongestDrive(
-  roundId: string,
-  playerId: string,
-  hole: number,
-  distanceM: number | null
-): Promise<ActionResult> {
-  if (hole < 1 || hole > 18) return { ok: false, error: "Hål måste vara mellan 1 och 18." };
-
-  const supabase = getAdminSupabase();
-  const { error } = await supabase
-    .from("longest_drive")
-    .insert({ round_id: roundId, player_id: playerId, hole, distance_m: distanceM });
-  if (error) return { ok: false, error: error.message };
-
-  revalidatePublicPages();
-  return { ok: true };
+export interface AwardEntryInput {
+  playerId: string;
+  distanceM: number;
 }
 
-export async function recordClosestToPin(
+export async function saveRoundAwards(
+  kind: AwardKind,
   roundId: string,
-  playerId: string,
   hole: number,
-  distanceM: number | null
+  entries: AwardEntryInput[]
 ): Promise<ActionResult> {
   if (hole < 1 || hole > 18) return { ok: false, error: "Hål måste vara mellan 1 och 18." };
-
-  const supabase = getAdminSupabase();
-  const { error } = await supabase
-    .from("closest_to_pin")
-    .insert({ round_id: roundId, player_id: playerId, hole, distance_m: distanceM });
-  if (error) return { ok: false, error: error.message };
-
-  revalidatePublicPages();
-  return { ok: true };
-}
-
-// ---------------------------------------------------------------------------
-// Scoring rules
-// ---------------------------------------------------------------------------
-
-export async function updateScoringRules(
-  tourId: string,
-  entries: Array<{ position: number; points: number }>
-): Promise<ActionResult> {
+  if (entries.length === 0) return { ok: false, error: "Inga resultat att spara." };
   for (const entry of entries) {
-    if (!Number.isInteger(entry.points) || entry.points < 0) {
-      return { ok: false, error: `Ogiltigt poängvärde för placering ${entry.position}.` };
+    if (!Number.isFinite(entry.distanceM) || entry.distanceM <= 0) {
+      return { ok: false, error: "Längd/avstånd måste vara ett positivt tal." };
     }
   }
 
   const supabase = getAdminSupabase();
-  const { error: deleteError } = await supabase.from("scoring_rules").delete().eq("tour_id", tourId);
-  if (deleteError) return { ok: false, error: deleteError.message };
-
-  if (entries.length > 0) {
-    const { error: insertError } = await supabase
-      .from("scoring_rules")
-      .insert(entries.map((entry) => ({ tour_id: tourId, position: entry.position, points: entry.points })));
-    if (insertError) return { ok: false, error: insertError.message };
-  }
+  const { error } = await supabase.from(kind).upsert(
+    entries.map((entry) => ({
+      round_id: roundId,
+      player_id: entry.playerId,
+      hole,
+      distance_m: entry.distanceM,
+    })),
+    { onConflict: "round_id,player_id" }
+  );
+  if (error) return { ok: false, error: error.message };
 
   revalidatePublicPages();
+  revalidatePath(`/rounds/${roundId}`);
   return { ok: true };
 }

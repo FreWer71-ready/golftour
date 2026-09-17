@@ -41,10 +41,6 @@ export default async function RoundsPage() {
         <>
           <h2 className="mb-3 font-heading text-lg font-semibold">Ny rond</h2>
           <RoundForm tourId={tour.id} nextSortOrder={rounds.length + 1} />
-
-          <Link href="/scoring" className="mt-6 block text-center text-sm text-ink-soft underline">
-            Ändra poängsystem →
-          </Link>
         </>
       )}
     </div>
