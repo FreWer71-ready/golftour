@@ -12,6 +12,7 @@ import type {
   RoundScoreWithPlayer,
   Tour,
   TourLeaderboardRow,
+  YatzyLeaderboardRow,
 } from "./types/database";
 
 /** Throws with a readable message instead of letting a raw Postgrest error bubble up. */
@@ -294,4 +295,39 @@ export async function getAwardWinStandings(
     .filter((row) => row[field] > 0)
     .map((row) => ({ playerName: row.player_name, wins: row[field] }))
     .sort((a, b) => b.wins - a.wins);
+}
+
+// ---------------------------------------------------------------------------
+// Yatzy — an unlimited number of games, each scored on the same fixed
+// points scale, kept as its own separate totals table.
+// ---------------------------------------------------------------------------
+
+export async function getYatzyLeaderboard(tourId: string): Promise<YatzyLeaderboardRow[]> {
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
+    .from("yatzy_leaderboard")
+    .select("*")
+    .eq("tour_id", tourId)
+    .order("position");
+  const rows = orThrow(data, error, "Kunde inte hämta Yatzy-tabellen") as YatzyLeaderboardRow[];
+  return rows.map((row) => ({
+    ...row,
+    total_points: toNumber(row.total_points),
+    games_played: toNumber(row.games_played),
+    position: toNumber(row.position),
+  }));
+}
+
+/** The next game number to register — one past the highest played so far. */
+export async function getNextYatzyGameNumber(tourId: string): Promise<number> {
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
+    .from("yatzy_scores")
+    .select("game_number")
+    .eq("tour_id", tourId)
+    .order("game_number", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(`Kunde inte hämta senaste Yatzy-omgången: ${error.message}`);
+  return data ? toNumber(data.game_number) + 1 : 1;
 }

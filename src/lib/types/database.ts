@@ -151,3 +151,23 @@ export interface RoundAwardWinner {
   distance_m: number | null;
   hole: number | null;
 }
+
+export interface YatzyScore {
+  id: string;
+  tour_id: string;
+  game_number: number;
+  player_id: string;
+  score: number;
+  created_at: string;
+}
+
+/** Yatzy's own totals table — fixed 10/8/6/4/2 points per game, kept
+ *  separate from the golf points competition. */
+export interface YatzyLeaderboardRow {
+  tour_id: string;
+  player_id: string;
+  player_name: string;
+  total_points: number;
+  games_played: number;
+  position: number;
+}

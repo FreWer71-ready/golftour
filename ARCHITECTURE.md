@@ -41,16 +41,19 @@ på ett ställe.
 | `round_scores`     | En spelares brutto/handikap för en rond. `net_score` (resultatet) är en genererad kolumn (`gross - handicap`) — det är den som räknas i leaderboard. |
 | `longest_drive`    | Ett mätt resultat per spelare och rond (delad hål, `unique(round_id, player_id)`) — en egen deltävling per rond, inte bara en enda vinnare. |
 | `closest_to_pin`   | Samma form som ovan, för närmast hål.                          |
+| `yatzy_scores`     | Ett oändligt antal Yatzy-omgångar; ett resultat per spelare och `game_number`, egen totaltabell, separat från poängtävlingen. |
 
 **Beräknade vyer** (aldrig lagrade, kan aldrig hamna i otakt med källdatan):
 
-- `round_scores_ranked` / `longest_drive_ranked` / `closest_to_pin_ranked` —
+- `round_scores_ranked` / `longest_drive_ranked` / `closest_to_pin_ranked` / `yatzy_scores_ranked` —
   placering per rond, för respektive deltävling.
 - `tour_points` — varje poänggivande placering (rond + LD + CTP) på den
   fasta 10/8/6/4/2-skalan (`fixed_points()`).
 - `points_leaderboard` — poängtävlingen: summa `tour_points` per spelare.
 - `tour_leaderboard` — den klassiska totalställningen (summa nettoscore
   över spelade ronder) — separat från poängtävlingen.
+- `yatzy_leaderboard` — Yatzys egen totaltabell, samma `fixed_points()`-skala
+  men helt separat summa, inte en del av `tour_points`.
 - `player_tour_stats` — allt till Statistik-vyn: totalpoäng (från
   `tour_points`), vunna ronder, LD-/CTP-segrar, snittplacering.
 
@@ -167,9 +170,10 @@ mallorca-golf-tour/
 │   │   ├── longest-drive/     Longest Drive: ställning + rond-för-rond-tabell
 │   │   ├── closest-to-pin/    Closest to Pin: ställning + rond-för-rond-tabell
 │   │   ├── points/            Poängtävlingen (10/8/6/4/2, rond + LD + CTP)
+│   │   ├── yatzy/             Yatzy: egen totaltabell + registrera omgång
 │   │   └── stats/             Statistik
 │   ├── components/            UI-byggklossar (Leaderboard, PointsLeaderboard, LiveAwardsTable, ...)
-│   │   └── forms/              RoundForm, ScoreEntryForm, AwardEntryForm
+│   │   └── forms/              RoundForm, ScoreEntryForm, AwardEntryForm, YatzyEntryForm
 │   └── lib/
 │       ├── supabase/          Browser-, server- och service-role-klienter
 │       ├── types/             Handskrivna databastyper

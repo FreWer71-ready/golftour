@@ -21,6 +21,7 @@ function revalidatePublicPages() {
   revalidatePath("/longest-drive");
   revalidatePath("/closest-to-pin");
   revalidatePath("/stats");
+  revalidatePath("/yatzy");
 }
 
 // ---------------------------------------------------------------------------
@@ -147,5 +148,46 @@ export async function saveRoundAwards(
 
   revalidatePublicPages();
   revalidatePath(`/rounds/${roundId}`);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Yatzy — an unlimited number of games, same fixed points scale, kept as
+// its own separate totals table.
+// ---------------------------------------------------------------------------
+
+export interface YatzyEntryInput {
+  playerId: string;
+  score: number;
+}
+
+export async function saveYatzyGame(
+  tourId: string,
+  gameNumber: number,
+  entries: YatzyEntryInput[]
+): Promise<ActionResult> {
+  if (!Number.isInteger(gameNumber) || gameNumber < 1) {
+    return { ok: false, error: "Ogiltigt omgångsnummer." };
+  }
+  if (entries.length === 0) return { ok: false, error: "Inga resultat att spara." };
+  for (const entry of entries) {
+    if (!Number.isInteger(entry.score) || entry.score < 0) {
+      return { ok: false, error: "Poäng måste vara ett heltal, 0 eller mer." };
+    }
+  }
+
+  const supabase = getAdminSupabase();
+  const { error } = await supabase.from("yatzy_scores").upsert(
+    entries.map((entry) => ({
+      tour_id: tourId,
+      game_number: gameNumber,
+      player_id: entry.playerId,
+      score: entry.score,
+    })),
+    { onConflict: "tour_id,game_number,player_id" }
+  );
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublicPages();
   return { ok: true };
 }

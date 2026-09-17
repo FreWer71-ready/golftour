@@ -73,6 +73,18 @@ create table closest_to_pin (
   unique (round_id, player_id)
 );
 
+-- Yatzy: an unlimited number of games, each with one score per player who
+-- played it — no round/hole concept, just a game number and a score.
+create table yatzy_scores (
+  id uuid primary key default gen_random_uuid(),
+  tour_id uuid not null references tours(id) on delete cascade,
+  game_number int not null check (game_number > 0),
+  player_id uuid not null references players(id) on delete cascade,
+  score int not null check (score >= 0),
+  created_at timestamptz not null default now(),
+  unique (tour_id, game_number, player_id)
+);
+
 -- Keep round_scores.updated_at current on edits.
 create or replace function set_updated_at()
 returns trigger
@@ -185,6 +197,34 @@ cross join players p
 left join tour_points tp on tp.tour_id = t.id and tp.player_id = p.id
 group by t.id, p.id, p.name;
 
+-- Per-game placement for Yatzy (higher score wins), and its own totals
+-- table — deliberately separate from points_leaderboard.
+create view yatzy_scores_ranked as
+select
+  ys.id,
+  ys.tour_id,
+  ys.game_number,
+  ys.player_id,
+  ys.score,
+  rank() over (partition by ys.tour_id, ys.game_number order by ys.score desc) as position
+from yatzy_scores ys;
+
+create view yatzy_leaderboard as
+select
+  t.id as tour_id,
+  p.id as player_id,
+  p.name as player_name,
+  coalesce(sum(fixed_points(ysr.position)), 0) as total_points,
+  count(ysr.game_number) as games_played,
+  rank() over (
+    partition by t.id
+    order by coalesce(sum(fixed_points(ysr.position)), 0) desc
+  ) as position
+from tours t
+cross join players p
+left join yatzy_scores_ranked ysr on ysr.tour_id = t.id and ysr.player_id = p.id
+group by t.id, p.id, p.name;
+
 -- Total leaderboard: sum of net scores across completed rounds (classic
 -- stroke-play tour total — lower is better, ties share a rank).
 create view tour_leaderboard as
@@ -260,6 +300,7 @@ alter table rounds enable row level security;
 alter table round_scores enable row level security;
 alter table longest_drive enable row level security;
 alter table closest_to_pin enable row level security;
+alter table yatzy_scores enable row level security;
 
 create policy "Public read" on players for select using (true);
 create policy "Public read" on tours for select using (true);
@@ -267,10 +308,11 @@ create policy "Public read" on rounds for select using (true);
 create policy "Public read" on round_scores for select using (true);
 create policy "Public read" on longest_drive for select using (true);
 create policy "Public read" on closest_to_pin for select using (true);
+create policy "Public read" on yatzy_scores for select using (true);
 
 -- ---------------------------------------------------------------------------
 -- Realtime — let clients subscribe to live changes on these tables so the
 -- leaderboard and awards update on every screen as soon as someone saves.
 -- ---------------------------------------------------------------------------
 
-alter publication supabase_realtime add table rounds, round_scores, longest_drive, closest_to_pin;
+alter publication supabase_realtime add table rounds, round_scores, longest_drive, closest_to_pin, yatzy_scores;

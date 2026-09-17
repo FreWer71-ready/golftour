@@ -60,6 +60,18 @@ const items: Array<{ href: string; label: string; icon: ReactNode }> = [
       />
     ),
   },
+  {
+    href: "/yatzy",
+    label: "Extra",
+    icon: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="8.3" cy="8.3" r="1.15" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none" />
+        <circle cx="15.7" cy="15.7" r="1.15" fill="currentColor" stroke="none" />
+      </>
+    ),
+  },
 ];
 
 export function BottomNav() {
@@ -73,7 +85,7 @@ export function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center gap-1 px-2 py-1 ${active ? "text-maroon" : "text-ink-soft"}`}
+            className={`flex flex-col items-center gap-1 px-1 py-1 ${active ? "text-maroon" : "text-ink-soft"}`}
           >
             <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]">
               {item.icon}

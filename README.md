@@ -2,8 +2,9 @@
 
 En enkel, mobilanpassad app för en privat golftour (4–20 deltagare):
 totalleaderboard, en poängtävling (10/8/6/4/2 per rond + Longest Drive +
-Closest to Pin), ronder, och statistik. Ingen inloggning — vem som helst i
-gruppen kan registrera resultat, när som helst, direkt på respektive sida.
+Closest to Pin), ronder, statistik — och en extra flik för Yatzy (egen
+totaltabell, samma poängskala). Ingen inloggning — vem som helst i gruppen
+kan registrera resultat, när som helst, direkt på respektive sida.
 
 Se [ARCHITECTURE.md](ARCHITECTURE.md) för produktarkitektur, databasmodell,
 ER-diagram och projektstruktur, [MVP.md](MVP.md) för byggordning, och
@@ -23,11 +24,12 @@ mobila wireframes koden bygger på (öppna filen direkt i en webbläsare).
    turneringsaffischen. Redigera gärna filen först om ni redan vet era
    riktiga banor/datum.
    - Har du redan kört `0001_init.sql` en gång tidigare (innan
-     "Pågående"-status för ronder och poängtävlingen fanns)? Kör även, i
-     ordning:
-     [`0003_round_ongoing_status.sql`](supabase/migrations/0003_round_ongoing_status.sql)
+     "Pågående"-status för ronder, poängtävlingen eller Yatzy fanns)? Kör
+     även, i ordning:
+     [`0003_round_ongoing_status.sql`](supabase/migrations/0003_round_ongoing_status.sql),
+     [`0004_points_competition.sql`](supabase/migrations/0004_points_competition.sql)
      och
-     [`0004_points_competition.sql`](supabase/migrations/0004_points_competition.sql).
+     [`0005_yatzy.sql`](supabase/migrations/0005_yatzy.sql).
      Nya projekt behöver inte det — allt ingår redan i `0001_init.sql`.
 5. Under **Project Settings → API**, kopiera:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
@@ -74,6 +76,9 @@ Ingen adminroll, ingen PIN — vem som helst med länken kan när som helst:
   räknas automatiskt och är det som gäller i leaderboard — på respektive rond
 - Registrera Longest Drive och Closest to Pin — ett mätt resultat per spelare,
   samma hål för alla, direkt på respektive rond. Rangordnas automatiskt.
+- Registrera Yatzy-omgångar — **Extra**-fliken. Oändligt antal omgångar,
+  en poäng per spelare och omgång, egen totaltabell (samma 10/8/6/4/2-skala
+  men separat från golfens poängtävling).
 
 Poängtävlingen (**/points**, eller kortet på Hem) ger 10/8/6/4/2 poäng för
 plats 1–5 i varje rond **och** varje ronds Longest Drive och Closest to Pin —
