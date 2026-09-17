@@ -125,6 +125,9 @@ export interface PlayerTourStats {
   avg_position: number | null;
   longest_drive_wins: number;
   closest_to_pin_wins: number;
+  /** This player's own best recorded result, not a win count. */
+  longest_drive_best_m: number | null;
+  closest_to_pin_best_m: number | null;
 }
 
 // Joined shapes used by the UI (player/course name resolved alongside the row).

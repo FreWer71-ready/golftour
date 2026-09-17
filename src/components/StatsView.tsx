@@ -6,6 +6,7 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { Card, CardLabel, CardSub, CardValue } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { usePlayerName } from "@/lib/use-player";
+import { formatDistance } from "@/lib/format";
 import type { PlayerTourStats } from "@/lib/types/database";
 
 export function StatsView({ stats, roundsInTour }: { stats: PlayerTourStats[]; roundsInTour: number }) {
@@ -40,8 +41,11 @@ export function StatsView({ stats, roundsInTour }: { stats: PlayerTourStats[]; r
           <div className="grid grid-cols-2 gap-2.5">
             <StatTile value={selected.total_points} label="Totalpoäng" />
             <StatTile value={selected.rounds_won} label="Vunna rundor" />
-            <StatTile value={selected.longest_drive_wins} label="Longest Drive" />
-            <StatTile value={selected.closest_to_pin_wins} label="Closest to Pin" />
+            <StatTile value={formatDistance(selected.longest_drive_best_m) ?? "–"} label="Bästa Longest Drive" />
+            <StatTile
+              value={formatDistance(selected.closest_to_pin_best_m) ?? "–"}
+              label="Bästa Closest to Pin"
+            />
           </div>
           <Link href="/points" className="mt-3 block text-center text-sm text-ink-soft underline">
             Visa hela poängtävlingen →
@@ -61,7 +65,7 @@ export function StatsView({ stats, roundsInTour }: { stats: PlayerTourStats[]; r
   );
 }
 
-function StatTile({ value, label }: { value: number; label: string }) {
+function StatTile({ value, label }: { value: number | string; label: string }) {
   return (
     <div className="rounded-card border border-line bg-parchment p-3.5 text-center">
       <div className="font-data text-[27px] font-bold text-maroon">{value}</div>

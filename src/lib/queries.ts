@@ -146,6 +146,8 @@ export async function getPlayerTourStats(tourId: string): Promise<PlayerTourStat
     avg_position: toNumberOrNull(row.avg_position),
     longest_drive_wins: toNumber(row.longest_drive_wins),
     closest_to_pin_wins: toNumber(row.closest_to_pin_wins),
+    longest_drive_best_m: toNumberOrNull(row.longest_drive_best_m),
+    closest_to_pin_best_m: toNumberOrNull(row.closest_to_pin_best_m),
   }));
 }
 

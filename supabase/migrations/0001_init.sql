@@ -244,6 +244,8 @@ group by r.tour_id, rs.player_id, p.name;
 
 -- Per-player stats for the Statistik screen. total_points comes from the
 -- same fixed points competition as points_leaderboard (rounds + LD + CTP).
+-- longest_drive_best_m / closest_to_pin_best_m are that player's own best
+-- recorded result (not how many times they placed 1st).
 create view player_tour_stats as
 select
   t.id as tour_id,
@@ -254,7 +256,9 @@ select
   coalesce(rp.rounds_won, 0) as rounds_won,
   rp.avg_position,
   coalesce(ld.ld_wins, 0) as longest_drive_wins,
-  coalesce(ctp.ctp_wins, 0) as closest_to_pin_wins
+  coalesce(ctp.ctp_wins, 0) as closest_to_pin_wins,
+  ld.best_m as longest_drive_best_m,
+  ctp.best_m as closest_to_pin_best_m
 from tours t
 cross join players p
 left join (
@@ -273,12 +277,12 @@ left join (
   group by tour_id, player_id
 ) rp on rp.tour_id = t.id and rp.player_id = p.id
 left join (
-  select tour_id, player_id, count(*) filter (where position = 1) as ld_wins
+  select tour_id, player_id, count(*) filter (where position = 1) as ld_wins, max(distance_m) as best_m
   from longest_drive_ranked
   group by tour_id, player_id
 ) ld on ld.tour_id = t.id and ld.player_id = p.id
 left join (
-  select tour_id, player_id, count(*) filter (where position = 1) as ctp_wins
+  select tour_id, player_id, count(*) filter (where position = 1) as ctp_wins, min(distance_m) as best_m
   from closest_to_pin_ranked
   group by tour_id, player_id
 ) ctp on ctp.tour_id = t.id and ctp.player_id = p.id;
