@@ -13,5 +13,10 @@ import { supabaseServiceRoleKey, supabaseUrl } from "./config";
 export function getAdminSupabase() {
   return createClient(supabaseUrl(), supabaseServiceRoleKey(), {
     auth: { persistSession: false },
+    // See server.ts for why: Next.js can cache the fetch calls supabase-js
+    // makes internally even on a force-dynamic route.
+    global: {
+      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    },
   });
 }
