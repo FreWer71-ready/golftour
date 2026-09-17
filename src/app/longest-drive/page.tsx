@@ -1,14 +1,26 @@
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { BadgeFrame, Card, CardLabel, CardSub, CardValue } from "@/components/ui/Card";
-import { getActiveTour, getLongestDriveBoard } from "@/lib/queries";
+import { AwardForm } from "@/components/forms/AwardForm";
+import { getActiveTour, getLongestDriveBoard, getPlayers, getRounds } from "@/lib/queries";
 import { formatDistance } from "@/lib/format";
 import { countWinsByPlayer } from "@/lib/scoring";
+import type { LongestDriveWithPlayer, Player, Round } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
 export default async function LongestDrivePage() {
   const tour = await getActiveTour();
-  const entries = tour ? await getLongestDriveBoard(tour.id) : [];
+
+  let entries: LongestDriveWithPlayer[] = [];
+  let rounds: Round[] = [];
+  let players: Player[] = [];
+  if (tour) {
+    [entries, rounds, players] = await Promise.all([
+      getLongestDriveBoard(tour.id),
+      getRounds(tour.id),
+      getPlayers(),
+    ]);
+  }
   const leader = entries[0];
   const standings = countWinsByPlayer(entries);
 
@@ -45,6 +57,13 @@ export default async function LongestDrivePage() {
             ))}
           </div>
         </Card>
+      )}
+
+      {rounds.length > 0 && players.length > 0 && (
+        <>
+          <h2 className="mb-3 mt-6 font-heading text-lg font-semibold">Registrera Longest Drive</h2>
+          <AwardForm kind="longest-drive" rounds={rounds} players={players} />
+        </>
       )}
     </div>
   );

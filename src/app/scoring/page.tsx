@@ -1,10 +1,10 @@
-import { requireAdminPage } from "@/lib/admin/require-admin";
 import { getActiveTour, getScoringRules } from "@/lib/queries";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { ScoringForm } from "@/components/admin/ScoringForm";
+import { ScoringForm } from "@/components/forms/ScoringForm";
 
-export default async function AdminScoringPage() {
-  requireAdminPage();
+export const dynamic = "force-dynamic";
+
+export default async function ScoringPage() {
   const tour = await getActiveTour();
   if (!tour) return null;
 
@@ -12,7 +12,7 @@ export default async function AdminScoringPage() {
 
   return (
     <div className="mx-auto max-w-sm px-4 pt-10">
-      <ScreenHeader eyebrow="Admin" title="Poängsystem" />
+      <ScreenHeader eyebrow="Ronder" title="Poängsystem" />
       <p className="mb-4 text-sm text-ink-soft">
         Poäng per placering i varje rond. Summeras till Totalpoäng på Statistik-sidan.
       </p>

@@ -32,7 +32,7 @@ create table rounds (
   course_name text not null,
   round_date date not null,
   tee_time time,
-  status text not null default 'upcoming' check (status in ('upcoming', 'completed')),
+  status text not null default 'upcoming' check (status in ('upcoming', 'ongoing', 'completed')),
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );

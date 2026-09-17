@@ -2,20 +2,30 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { saveRoundScores } from "@/app/admin/actions";
+import { saveRoundScores } from "@/app/actions";
 import { Button } from "@/components/ui/Button";
 import type { Player, RoundScoreWithPlayer } from "@/lib/types/database";
 
 type Row = { grossScore: string; handicapStrokes: string };
 
+function netFor(row: Row | undefined): string {
+  if (!row) return "–";
+  const gross = Number(row.grossScore);
+  const hcp = Number(row.handicapStrokes || "0");
+  if (!row.grossScore.trim() || !Number.isFinite(gross)) return "–";
+  return String(gross - (Number.isFinite(hcp) ? hcp : 0));
+}
+
 export function ScoreEntryForm({
   roundId,
   players,
   existingScores,
+  roundStatus,
 }: {
   roundId: string;
   players: Player[];
   existingScores: RoundScoreWithPlayer[];
+  roundStatus: "upcoming" | "ongoing" | "completed";
 }) {
   const router = useRouter();
   const [rows, setRows] = useState<Record<string, Row>>(() => {
@@ -29,7 +39,7 @@ export function ScoreEntryForm({
     }
     return initial;
   });
-  const [markCompleted, setMarkCompleted] = useState(true);
+  const [markCompleted, setMarkCompleted] = useState(roundStatus !== "upcoming");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -52,7 +62,6 @@ export function ScoreEntryForm({
     startTransition(async () => {
       const result = await saveRoundScores(roundId, entries, markCompleted);
       if (result.ok) {
-        router.push(`/rounds/${roundId}`);
         router.refresh();
       } else {
         setError(result.error);
@@ -72,7 +81,10 @@ export function ScoreEntryForm({
               Brutto
             </th>
             <th className="pb-2 text-left font-label text-[10px] uppercase tracking-wide text-maroon">
-              Hcp
+              Handikap
+            </th>
+            <th className="pb-2 text-left font-label text-[10px] uppercase tracking-wide text-maroon">
+              Resultat
             </th>
           </tr>
         </thead>
@@ -88,7 +100,7 @@ export function ScoreEntryForm({
                   className="w-16 rounded-lg border border-line bg-paper px-2 py-1.5 font-data text-[14px]"
                 />
               </td>
-              <td className="py-2">
+              <td className="py-2 pr-2">
                 <input
                   inputMode="numeric"
                   value={rows[player.id]?.handicapStrokes ?? "0"}
@@ -96,10 +108,14 @@ export function ScoreEntryForm({
                   className="w-14 rounded-lg border border-line bg-paper px-2 py-1.5 font-data text-[14px]"
                 />
               </td>
+              <td className="py-2 font-data text-[15px] font-semibold text-maroon">
+                {netFor(rows[player.id])}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <p className="text-xs text-ink-soft">Resultatet (brutto − handikap) är det som räknas i leaderboard.</p>
 
       <label className="flex items-center gap-2 text-sm text-ink-soft">
         <input

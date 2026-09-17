@@ -1,30 +1,31 @@
 # MVP-plan
 
-Målet är en app som klarar en verklig tour (4–20 spelare, 3+ ronder) med
-minimal admin-insats under själva resan. Byggordning, inte tidsuppskattning:
+Målet är en app som klarar en verklig tour (4–20 spelare, 3+ ronder) utan
+att någon behöver administrera den under resan — vem som helst i gruppen kan
+lägga in resultat direkt. Byggordning, inte tidsuppskattning:
 
 ## Fas 1 — Grund (klart i detta repo)
 - [x] Databasschema + RLS + vyer för leaderboard/statistik (`supabase/migrations`)
 - [x] Designsystem: färger, typsnitt, komponenter (Tailwind-tokens från wireframen)
 - [x] Namnval + lokal lagring av spelare, ingen inloggning
-- [x] Dashboard: total leaderboard, nästa rond, senaste resultat, LD/CTP-ledare
-- [x] Ronder: lista + detaljvy med scorecard
-- [x] Longest Drive / Closest to Pin: aktuell segrare + historik
+- [x] Dashboard: total leaderboard, pågående tävling, live-tabell för LD/CTP, nästa tävling
+- [x] Ronder: lista + ny-rond-formulär + detaljvy med scorecard och resultatregistrering
+- [x] Longest Drive / Closest to Pin: aktuell segrare, historik och registrering — öppet för alla
 - [x] Statistik per spelare
-- [x] Admin: PIN-lås, skapa/redigera rond, registrera resultat, LD, CTP, poängsystem
+- [x] Öppen resultatregistrering: ingen PIN, ingen adminroll — brutto + handikap
+      in, nettot (resultatet) räknas fram automatiskt
 - [x] Realtidsuppdatering via Supabase Realtime
 
 ## Fas 2 — Innan resan (du gör detta)
 - [ ] Skapa Supabase-projekt, kör migrationerna, sätt env-variabler (README)
-- [ ] Byt `ADMIN_PIN` till en egen kod, dela den bara med den/de som ska
-      registrera resultat
 - [ ] Kontrollera/justera deltagarlistan, ronder och tee times för er resa
 - [ ] Deploya till Vercel, testa hela flödet på mobil på riktig 4G/5G
 
 ## Fas 3 — Under resan
-- [ ] Registrera resultat efter varje rond (admin, från klubbhuset eller mobilen)
+- [ ] Markera dagens rond som "Pågående" på Ronder-sidan när ni börjar spela
+- [ ] Vem som helst registrerar resultat efter varje rond, direkt i mobilen
 - [ ] Registrera Longest Drive / Closest to Pin löpande under ronden
-- [ ] Låt gruppen följa leaderboard live i klubbhuset/på bussen
+- [ ] Låt gruppen följa leaderboard och live-tabellen i klubbhuset/på bussen
 
 ## Fas 4 — Efter MVP (valfria vidareutvecklingar, inte byggda nu)
 Dessa är medvetet **inte** byggda för att hålla appen enkel — lägg bara till

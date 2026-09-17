@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Leaderboard } from "@/components/Leaderboard";
-import { Card, CardLabel, CardSub, CardValue, BadgeFrame } from "@/components/ui/Card";
+import { LiveAwardsTable } from "@/components/LiveAwardsTable";
+import { Card, CardLabel, CardSub, CardValue } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
 import {
   getActiveTour,
   getClosestToPinBoard,
   getLongestDriveBoard,
-  getRoundScores,
   getRounds,
   getTourLeaderboard,
 } from "@/lib/queries";
-import { formatDistance, formatRoundDate, formatTeeTime } from "@/lib/format";
+import { formatRoundDate, formatTeeTime } from "@/lib/format";
+import { ROUND_STATUS_TONE, ROUND_STATUS_LABEL } from "@/lib/round-status";
 
 export const dynamic = "force-dynamic";
 
@@ -32,12 +34,8 @@ export default async function DashboardPage() {
     getClosestToPinBoard(tour.id),
   ]);
 
+  const ongoingRound = rounds.find((round) => round.status === "ongoing");
   const nextRound = rounds.find((round) => round.status === "upcoming");
-  const lastCompleted = [...rounds].reverse().find((round) => round.status === "completed");
-  const lastCompletedWinner = lastCompleted ? (await getRoundScores(lastCompleted.id))[0] : null;
-
-  const ldLeader = longestDrives[0];
-  const ctpLeader = closestToPins[0];
 
   const dateRange = `${formatRoundDate(tour.start_date)} – ${formatRoundDate(tour.end_date)}${
     tour.location ? ` · ${tour.location}` : ""
@@ -59,45 +57,36 @@ export default async function DashboardPage() {
         )}
       </Card>
 
+      {ongoingRound && (
+        <Card>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <CardLabel>Pågående tävling</CardLabel>
+              <CardValue>{ongoingRound.course_name}</CardValue>
+              <CardSub>
+                {formatRoundDate(ongoingRound.round_date)}
+                {ongoingRound.tee_time ? ` · Tee ${formatTeeTime(ongoingRound.tee_time)}` : ""}
+              </CardSub>
+            </div>
+            <Chip tone={ROUND_STATUS_TONE.ongoing}>{ROUND_STATUS_LABEL.ongoing}</Chip>
+          </div>
+          <Link href={`/rounds/${ongoingRound.id}`} className="mt-2 block text-sm text-ink-soft">
+            Registrera resultat →
+          </Link>
+        </Card>
+      )}
+
+      <LiveAwardsTable longestDrive={longestDrives[0]} closestToPin={closestToPins[0]} />
+
       {nextRound && (
         <Card>
-          <CardLabel>Nästa rond</CardLabel>
+          <CardLabel>Nästa tävling</CardLabel>
           <CardValue>{nextRound.course_name}</CardValue>
           <CardSub>
             {formatRoundDate(nextRound.round_date)}
             {nextRound.tee_time ? ` · Tee ${formatTeeTime(nextRound.tee_time)}` : ""}
           </CardSub>
         </Card>
-      )}
-
-      {lastCompleted && lastCompletedWinner && (
-        <Card>
-          <CardLabel>Senaste resultat</CardLabel>
-          <CardValue>{lastCompleted.course_name}</CardValue>
-          <CardSub>
-            Vinnare (netto): {lastCompletedWinner.player_name}, {lastCompletedWinner.net_score}
-          </CardSub>
-        </Card>
-      )}
-
-      {ldLeader && (
-        <BadgeFrame className="mb-3 p-3">
-          <CardLabel>Longest Drive-ledare</CardLabel>
-          <CardValue compact>
-            {ldLeader.player_name} · Hål {ldLeader.hole}
-            {ldLeader.distance_m !== null ? ` · ${formatDistance(ldLeader.distance_m)}` : ""}
-          </CardValue>
-        </BadgeFrame>
-      )}
-
-      {ctpLeader && (
-        <BadgeFrame className="mb-3 p-3">
-          <CardLabel>Closest to Pin-ledare</CardLabel>
-          <CardValue compact>
-            {ctpLeader.player_name} · Hål {ctpLeader.hole}
-            {ctpLeader.distance_m !== null ? ` · ${formatDistance(ctpLeader.distance_m)}` : ""}
-          </CardValue>
-        </BadgeFrame>
       )}
     </div>
   );

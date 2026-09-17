@@ -1,14 +1,26 @@
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { BadgeFrame, Card, CardLabel, CardSub, CardValue } from "@/components/ui/Card";
-import { getActiveTour, getClosestToPinBoard } from "@/lib/queries";
+import { AwardForm } from "@/components/forms/AwardForm";
+import { getActiveTour, getClosestToPinBoard, getPlayers, getRounds } from "@/lib/queries";
 import { formatDistance } from "@/lib/format";
 import { countWinsByPlayer } from "@/lib/scoring";
+import type { ClosestToPinWithPlayer, Player, Round } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClosestToPinPage() {
   const tour = await getActiveTour();
-  const entries = tour ? await getClosestToPinBoard(tour.id) : [];
+
+  let entries: ClosestToPinWithPlayer[] = [];
+  let rounds: Round[] = [];
+  let players: Player[] = [];
+  if (tour) {
+    [entries, rounds, players] = await Promise.all([
+      getClosestToPinBoard(tour.id),
+      getRounds(tour.id),
+      getPlayers(),
+    ]);
+  }
   const leader = entries[0];
   const standings = countWinsByPlayer(entries);
 
@@ -45,6 +57,13 @@ export default async function ClosestToPinPage() {
             ))}
           </div>
         </Card>
+      )}
+
+      {rounds.length > 0 && players.length > 0 && (
+        <>
+          <h2 className="mb-3 mt-6 font-heading text-lg font-semibold">Registrera Closest to Pin</h2>
+          <AwardForm kind="closest-to-pin" rounds={rounds} players={players} />
+        </>
       )}
     </div>
   );

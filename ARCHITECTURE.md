@@ -7,26 +7,29 @@
 │                        Spelarens telefon                        │
 │  Next.js App Router (React Server + Client Components)          │
 │  ─ localStorage: valt spelarnamn                                 │
-│  ─ httpOnly cookie: admin-session (endast om PIN verifierats)    │
 └───────────────┬───────────────────────────────┬─────────────────┘
                 │ läsning (anon key)             │ Server Actions
                 ▼                                ▼
       ┌───────────────────┐            ┌───────────────────────┐
       │ Supabase Postgres  │◄──────────┤ Next.js Server Actions │
       │ RLS: publikt SELECT│  service   │ (körs på Vercel-servern)│
-      │ INSERT/UPDATE: nej │  role key  │ verifierar admin-PIN    │
-      └─────────┬──────────┘            └───────────────────────┘
+      │ INSERT/UPDATE: nej │  role key  │ (öppna för alla — ingen│
+      └─────────┬──────────┘            │  inloggning krävs)     │
+                │                       └───────────────────────┘
                 │ postgres_changes (Realtime)
                 ▼
       Alla öppna klienter uppdateras automatiskt
 ```
 
-**Kärnprincip:** ingen inloggning för spelare, men skrivningar är ändå säkra.
+**Kärnprincip:** ingen inloggning alls — varken för att läsa eller skriva.
 Alla `SELECT`-frågor går direkt från webbläsaren till Supabase med den
 publika (anon) nyckeln — RLS-policyer tillåter bara läsning. Alla
-skrivningar (registrera resultat, skapa rond, osv.) går via Next.js
-**Server Actions** som körs på servern, verifierar admin-PIN-cookien, och
-skriver med Supabase **service role**-nyckeln, som aldrig når klienten.
+skrivningar (registrera resultat, skapa rond, osv.) går ändå via Next.js
+**Server Actions** som körs på servern och skriver med Supabase
+**service role**-nyckeln, som aldrig når klienten — inte för att spärra
+vem som får skriva (vem som helst i gruppen får, när som helst), utan för
+att hålla service role-nyckeln borta från webbläsaren och validera indata
+på ett ställe.
 
 ## 2. Databasmodell
 
@@ -34,11 +37,11 @@ skriver med Supabase **service role**-nyckeln, som aldrig når klienten.
 | ------------------ | ------------------------------------------------------------- |
 | `players`          | De 4–20 deltagarna. Bara namn — inget konto, inget lösenord.   |
 | `tours`            | En golfresa (t.ex. "Mallorca Golf Tour 2026"). En är `is_active`. |
-| `rounds`           | En rond: bana, datum, tee time, status (`upcoming`/`completed`). |
-| `round_scores`     | En spelares brutto/netto för en rond. `net_score` är en genererad kolumn (`gross - handicap`). |
+| `rounds`           | En rond: bana, datum, tee time, status (`upcoming`/`ongoing`/`completed`). |
+| `round_scores`     | En spelares brutto/handikap för en rond. `net_score` (resultatet) är en genererad kolumn (`gross - handicap`) — det är den som räknas i leaderboard. |
 | `longest_drive`    | En registrering: rond, hål, spelare, längd (valfri).           |
 | `closest_to_pin`   | Samma form som ovan, för närmast hål.                          |
-| `scoring_rules`    | Poäng per placering för touren (admin-redigerbar).             |
+| `scoring_rules`    | Poäng per placering för touren (redigerbar av alla på `/scoring`). |
 
 **Beräknade vyer** (aldrig lagrade, kan aldrig hamna i otakt med källdatan):
 
@@ -116,20 +119,24 @@ erDiagram
     }
 ```
 
-## 4. Admin-läge (PIN) utan konton
+## 4. Resultatregistrering — öppen för alla, inga konton
 
-1. Admin öppnar `/admin`, matar in PIN-koden på en sifferklaved (samma
-   design som wireframen).
-2. En Server Action (`verifyPin`) jämför koden mot `ADMIN_PIN` (env-variabel)
-   med en tidskonstant jämförelse, och sätter vid rätt kod en signerad,
-   `httpOnly`, `secure` cookie (`admin_session`) giltig i 12 timmar.
-3. Varje admin-Server Action (`upsertRound`, `saveRoundScores`,
-   `recordLongestDrive`, `recordClosestToPin`, `updateScoringRules`) börjar
-   med `ensureAdmin()`, som verifierar cookiens signatur och utgångstid
-   innan något skrivs — och returnerar ett vanligt felmeddelande (inte ett
-   kastat undantag) om sessionen har gått ut, så formuläret kan visa det.
-4. PIN-koden och service role-nyckeln lämnar aldrig servern — klienten ser
-   bara resultatet av en lyckad/misslyckad inloggning.
+Det finns ingen adminroll och ingen PIN. Formulären för att skapa/redigera
+ronder, registrera resultat, Longest Drive, Closest to Pin och ändra
+poängsystemet ligger direkt på de publika sidorna (`/rounds/[roundId]`,
+`/longest-drive`, `/closest-to-pin`, `/scoring`) — vem som helst med länken
+till appen kan använda dem, när som helst under resan.
+
+Resultatregistreringen är designad kring **brutto in, netto ut**: formuläret
+tar emot bruttoslag och handikap per spelare; `net_score` — resultatet som
+räknas i leaderboard, placering och statistik — räknas alltid fram av
+databasen (`gross_score - handicap_strokes`), aldrig matas in direkt.
+
+Server Actions (`src/app/actions.ts`) körs fortfarande via Supabase
+**service role**-nyckeln istället för att låta klienten skriva direkt mot
+Postgres. Det handlar inte om åtkomstkontroll (det finns ingen), utan om att
+hålla service role-nyckeln borta från webbläsaren och validera indata
+(giltiga hål, positiva slag, osv.) på ett ställe innan något sparas.
 
 ## 5. Realtidsfunktioner
 
@@ -137,7 +144,7 @@ Varje sida som visar leaderboard, ronder eller awards renderas först som en
 **Server Component** (snabb första laddning, fräsch data). En liten client
 component, `RealtimeWatcher`, prenumererar sedan på Supabase Realtime
 (`postgres_changes`) för `rounds`, `round_scores`, `longest_drive` och
-`closest_to_pin`. Så fort admin sparar ett resultat på sin telefon skickar
+`closest_to_pin`. Så fort någon sparar ett resultat på sin telefon skickar
 Postgres en ändringshändelse, `RealtimeWatcher` fångar den och kör
 `router.refresh()` — alla andra spelares telefoner uppdateras automatiskt,
 utan att någon behöver dra ner för att uppdatera.
@@ -152,17 +159,19 @@ mallorca-golf-tour/
 │   │   ├── layout.tsx         Root layout, typsnitt, PlayerGate
 │   │   ├── globals.css        Designtoken (CSS-variabler), Tailwind-lager
 │   │   ├── page.tsx           Namnval (om inget namn valt) / redirect
-│   │   ├── dashboard/         Dashboard
-│   │   ├── rounds/            Ronder: lista + [roundId]-detalj
-│   │   ├── longest-drive/     Longest Drive
-│   │   ├── closest-to-pin/    Closest to Pin
-│   │   ├── stats/             Statistik
-│   │   └── admin/             PIN-lås, panel, formulär (Server Actions i actions.ts)
-│   ├── components/            UI-byggklossar (Leaderboard, ScoreTable, PinPad, ...)
+│   │   ├── actions.ts         Alla Server Actions (skapa rond, spara resultat, ...)
+│   │   ├── dashboard/         Dashboard: leaderboard, pågående/nästa rond, live-awards
+│   │   ├── rounds/            Ronder: lista + ny-rond-formulär, [roundId]-detalj + resultat
+│   │   ├── longest-drive/     Longest Drive: ställning + registreringsformulär
+│   │   ├── closest-to-pin/    Closest to Pin: ställning + registreringsformulär
+│   │   ├── scoring/           Poängsystem (poäng per placering)
+│   │   └── stats/             Statistik
+│   ├── components/            UI-byggklossar (Leaderboard, LiveAwardsTable, ...)
+│   │   └── forms/              RoundForm, ScoreEntryForm, AwardForm, ScoringForm
 │   └── lib/
-│       ├── supabase/          Browser-, server- och admin-klienter
-│       ├── admin/             PIN-verifiering, sessionscookie
+│       ├── supabase/          Browser-, server- och service-role-klienter
 │       ├── types/             Handskrivna databastyper
+│       ├── round-status.ts    Etikett/färg per rondstatus (upcoming/ongoing/completed)
 │       ├── scoring.ts         Ren beräkningslogik (delas av UI och tester)
 │       └── player.ts          localStorage-hjälpare för valt namn
 └── ARCHITECTURE.md / MVP.md / README.md

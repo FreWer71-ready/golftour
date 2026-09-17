@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { upsertRound } from "@/app/admin/actions";
+import { upsertRound } from "@/app/actions";
 import { Button } from "@/components/ui/Button";
 import type { Round, RoundStatus } from "@/lib/types/database";
 
@@ -37,8 +37,12 @@ export function RoundForm({
         sortOrder: round?.sort_order ?? nextSortOrder,
       });
       if (result.ok) {
-        router.push("/admin/rounds");
-        router.refresh();
+        if (round) {
+          router.refresh();
+        } else {
+          // New round — jump straight to it so results can be added right away.
+          router.push(`/rounds/${result.id}`);
+        }
       } else {
         setError(result.error);
       }
@@ -79,6 +83,7 @@ export function RoundForm({
           className="w-full rounded-lg border border-line bg-paper px-3 py-2.5 font-body text-[14.5px] text-ink"
         >
           <option value="upcoming">Kommande</option>
+          <option value="ongoing">Pågående</option>
           <option value="completed">Spelad</option>
         </select>
       </Field>

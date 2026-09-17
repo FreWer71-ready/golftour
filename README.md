@@ -1,9 +1,9 @@
 # Mallorca Golf Tour
 
 En enkel, mobilanpassad app för en privat golftour (4–20 deltagare):
-leaderboard, ronder, Longest Drive, Closest to Pin och statistik — utan
-inloggning för spelarna, med ett PIN-skyddat adminläge för att registrera
-resultat.
+leaderboard, ronder, Longest Drive, Closest to Pin och statistik. Ingen
+inloggning — vem som helst i gruppen kan registrera resultat, när som helst,
+direkt på respektive sida.
 
 Se [ARCHITECTURE.md](ARCHITECTURE.md) för produktarkitektur, databasmodell,
 ER-diagram och projektstruktur, [MVP.md](MVP.md) för byggordning, och
@@ -22,6 +22,10 @@ mobila wireframes koden bygger på (öppna filen direkt i en webbläsare).
    lägger in de fem spelarna, de tre ronderna och resultatet från
    turneringsaffischen. Redigera gärna filen först om ni redan vet era
    riktiga banor/datum.
+   - Har du redan kört `0001_init.sql` en gång tidigare (innan
+     "Pågående"-status för ronder fanns)? Kör även
+     [`supabase/migrations/0003_round_ongoing_status.sql`](supabase/migrations/0003_round_ongoing_status.sql).
+     Nya projekt behöver inte det — det ingår redan i `0001_init.sql`.
 5. Under **Project Settings → API**, kopiera:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon public key** (äldre flik) eller **Publishable key**, `sb_publishable_...`
@@ -36,14 +40,7 @@ mobila wireframes koden bygger på (öppna filen direkt i en webbläsare).
 cp .env.example .env.local
 ```
 
-Fyll i de tre Supabase-värdena ovan, samt:
-
-- `ADMIN_PIN` — koden ni delar med den/de som ska registrera resultat.
-- `ADMIN_SESSION_SECRET` — en lång slumpad sträng. Generera en med:
-
-```bash
-openssl rand -hex 32
-```
+Fyll i de tre Supabase-värdena ovan.
 
 ## 3. Kör lokalt
 
@@ -65,15 +62,15 @@ webbläsare (eller webbläsarens mobilläge) eftersom appen är byggd mobile-fir
    **Project Settings → Environment Variables**.
 4. Deploya. Dela länken med gruppen.
 
-## Admin-läge
+## Registrera resultat
 
-Gå till `/admin`, ange PIN-koden (samma som `ADMIN_PIN`). Sessionen är giltig
-i 12 timmar per enhet. Från adminpanelen kan ni:
+Ingen adminroll, ingen PIN — vem som helst med länken kan när som helst:
 
-- Skapa/redigera ronder (bana, datum, tee time, status)
-- Registrera resultat (brutto, handicap → netto räknas automatiskt)
-- Registrera Longest Drive och Closest to Pin
-- Ändra poängsystemet (poäng per placering)
+- Skapa/redigera ronder (bana, datum, tee time, status: Kommande/Pågående/Spelad) — på **Ronder**
+- Registrera resultat: bruttoslag + handikap in, resultatet (brutto − handikap)
+  räknas automatiskt och är det som gäller i leaderboard — på respektive rond
+- Registrera Longest Drive och Closest to Pin — på respektive sida
+- Ändra poängsystemet (poäng per placering) — länk längst ner på **Ronder**
 
 Alla ändringar syns direkt hos alla andra öppna telefoner via Supabase
 Realtime — ingen behöver dra ner för att uppdatera.

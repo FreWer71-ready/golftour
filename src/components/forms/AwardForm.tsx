@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { recordClosestToPin, recordLongestDrive } from "@/app/admin/actions";
+import { recordClosestToPin, recordLongestDrive } from "@/app/actions";
 import { Button } from "@/components/ui/Button";
 import type { Player, Round } from "@/lib/types/database";
 
@@ -33,7 +33,8 @@ export function AwardForm({
       const action = kind === "longest-drive" ? recordLongestDrive : recordClosestToPin;
       const result = await action(roundId, playerId, holeNumber, distanceValue);
       if (result.ok) {
-        router.push(kind === "longest-drive" ? "/longest-drive" : "/closest-to-pin");
+        setHole("1");
+        setDistance("");
         router.refresh();
       } else {
         setError(result.error);

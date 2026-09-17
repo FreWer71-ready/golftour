@@ -1,24 +1,17 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getAdminSupabase } from "@/lib/supabase/admin";
-import { isAdmin } from "@/lib/admin/require-admin";
-import { ADMIN_SESSION_COOKIE, createAdminSessionToken, pinMatches } from "@/lib/admin/session";
 import type { RoundStatus } from "@/lib/types/database";
 
+// Every write in this file goes through the Supabase service role key (never
+// exposed to the browser) instead of the public anon key, purely so writes
+// aren't subject to the same RLS policies as public reads. There's no PIN or
+// login gate: anyone with the app's link can register results, at any time —
+// that's the point, for a small private group trip.
+
 export type ActionResult = { ok: true } | { ok: false; error: string };
-
-const SESSION_EXPIRED: ActionResult = {
-  ok: false,
-  error: "Admin-sessionen har gått ut. Gå till /admin och ange PIN-koden igen.",
-};
-
-/** Guards every mutating action. Returns an error result instead of throwing, so an
- *  expired session becomes a normal on-screen message rather than a crashed request. */
-function ensureAdmin(): ActionResult | null {
-  return isAdmin() ? null : SESSION_EXPIRED;
-}
+export type ActionResultWithId = { ok: true; id: string } | { ok: false; error: string };
 
 function revalidatePublicPages() {
   revalidatePath("/dashboard");
@@ -27,34 +20,7 @@ function revalidatePublicPages() {
   revalidatePath("/longest-drive");
   revalidatePath("/closest-to-pin");
   revalidatePath("/stats");
-}
-
-// ---------------------------------------------------------------------------
-// Admin session
-// ---------------------------------------------------------------------------
-
-export async function verifyPin(pin: string): Promise<ActionResult> {
-  const expectedPin = process.env.ADMIN_PIN;
-  if (!expectedPin) {
-    return { ok: false, error: "ADMIN_PIN är inte konfigurerad på servern." };
-  }
-  if (!pinMatches(pin, expectedPin)) {
-    return { ok: false, error: "Fel PIN-kod." };
-  }
-
-  const { token, expiresAt } = createAdminSessionToken();
-  cookies().set(ADMIN_SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    expires: expiresAt,
-  });
-  return { ok: true };
-}
-
-export async function logoutAdmin(): Promise<void> {
-  cookies().delete(ADMIN_SESSION_COOKIE);
+  revalidatePath("/scoring");
 }
 
 // ---------------------------------------------------------------------------
@@ -71,9 +37,7 @@ export interface UpsertRoundInput {
   sortOrder: number;
 }
 
-export async function upsertRound(input: UpsertRoundInput): Promise<ActionResult> {
-  const guard = ensureAdmin();
-  if (guard) return guard;
+export async function upsertRound(input: UpsertRoundInput): Promise<ActionResultWithId> {
   const supabase = getAdminSupabase();
 
   const row = {
@@ -85,18 +49,17 @@ export async function upsertRound(input: UpsertRoundInput): Promise<ActionResult
     sort_order: input.sortOrder,
   };
 
-  const { error } = input.id
-    ? await supabase.from("rounds").update(row).eq("id", input.id)
-    : await supabase.from("rounds").insert(row);
+  const { data, error } = input.id
+    ? await supabase.from("rounds").update(row).eq("id", input.id).select("id").single()
+    : await supabase.from("rounds").insert(row).select("id").single();
 
-  if (error) return { ok: false, error: error.message };
+  if (error || !data) return { ok: false, error: error?.message ?? "Kunde inte spara ronden." };
   revalidatePublicPages();
-  revalidatePath("/admin/rounds");
-  return { ok: true };
+  return { ok: true, id: data.id as string };
 }
 
 // ---------------------------------------------------------------------------
-// Scores
+// Scores — gross strokes + handicap in, net strokes is what counts as the result.
 // ---------------------------------------------------------------------------
 
 export interface ScoreEntryInput {
@@ -110,15 +73,13 @@ export async function saveRoundScores(
   entries: ScoreEntryInput[],
   markCompleted: boolean
 ): Promise<ActionResult> {
-  const guard = ensureAdmin();
-  if (guard) return guard;
   if (entries.length === 0) return { ok: false, error: "Inga resultat att spara." };
   for (const entry of entries) {
     if (!Number.isInteger(entry.grossScore) || entry.grossScore <= 0) {
-      return { ok: false, error: "Bruttoscore måste vara ett positivt heltal." };
+      return { ok: false, error: "Bruttoslag måste vara ett positivt heltal." };
     }
     if (!Number.isInteger(entry.handicapStrokes) || entry.handicapStrokes < 0) {
-      return { ok: false, error: "Handicap-slag kan inte vara negativt." };
+      return { ok: false, error: "Handikap kan inte vara negativt." };
     }
   }
 
@@ -144,7 +105,6 @@ export async function saveRoundScores(
 
   revalidatePublicPages();
   revalidatePath(`/rounds/${roundId}`);
-  revalidatePath("/admin/rounds");
   return { ok: true };
 }
 
@@ -158,8 +118,6 @@ export async function recordLongestDrive(
   hole: number,
   distanceM: number | null
 ): Promise<ActionResult> {
-  const guard = ensureAdmin();
-  if (guard) return guard;
   if (hole < 1 || hole > 18) return { ok: false, error: "Hål måste vara mellan 1 och 18." };
 
   const supabase = getAdminSupabase();
@@ -178,8 +136,6 @@ export async function recordClosestToPin(
   hole: number,
   distanceM: number | null
 ): Promise<ActionResult> {
-  const guard = ensureAdmin();
-  if (guard) return guard;
   if (hole < 1 || hole > 18) return { ok: false, error: "Hål måste vara mellan 1 och 18." };
 
   const supabase = getAdminSupabase();
@@ -200,8 +156,6 @@ export async function updateScoringRules(
   tourId: string,
   entries: Array<{ position: number; points: number }>
 ): Promise<ActionResult> {
-  const guard = ensureAdmin();
-  if (guard) return guard;
   for (const entry of entries) {
     if (!Number.isInteger(entry.points) || entry.points < 0) {
       return { ok: false, error: `Ogiltigt poängvärde för placering ${entry.position}.` };
@@ -220,6 +174,5 @@ export async function updateScoringRules(
   }
 
   revalidatePublicPages();
-  revalidatePath("/admin/scoring");
   return { ok: true };
 }

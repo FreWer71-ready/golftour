@@ -1,4 +1,4 @@
-export type RoundStatus = "upcoming" | "completed";
+export type RoundStatus = "upcoming" | "ongoing" | "completed";
 
 export interface Player {
   id: string;

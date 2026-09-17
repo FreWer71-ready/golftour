@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { updateScoringRules } from "@/app/admin/actions";
+import { updateScoringRules } from "@/app/actions";
 import { Button } from "@/components/ui/Button";
 import type { ScoringRule } from "@/lib/types/database";
 
