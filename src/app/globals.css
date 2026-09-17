@@ -7,14 +7,20 @@
   --color-ink-soft: #454034;
   --color-maroon: #7a2331;
   --color-maroon-strong: #5e1a24;
-  --color-gold: #ad8642;
+  /* Darkened from #ad8642 — the lighter gold only cleared ~3:1 against
+     paper/parchment, too low for the chevrons and borders that use it as
+     text/UI-component color, especially in bright sunlight. */
+  --color-gold: #8f6a32;
   --color-gold-bright: #c6a15b;
-  --color-parchment: #f4ead1;
-  --color-paper: #fbf4e3;
+  /* Parchment (card surfaces) darkened and paper (page background)
+     brightened — at their old values the two were nearly indistinguishable
+     (~1.1:1), so cards barely stood out from the page. */
+  --color-parchment: #efdfb8;
+  --color-paper: #fcf7ed;
   --color-fairway: #3b4a33;
   --color-brown: #2c1f14;
-  --color-line: rgba(44, 31, 20, 0.18);
-  --color-shadow: rgba(44, 31, 20, 0.16);
+  --color-line: rgba(44, 31, 20, 0.32);
+  --color-shadow: rgba(44, 31, 20, 0.22);
 
   --font-display: "Abril Fatface", Georgia, serif;
   --font-heading: "Fraunces", Georgia, serif;
@@ -31,11 +37,13 @@
     --color-maroon-strong: #e0687a;
     --color-gold: #c9a15c;
     --color-gold-bright: #e0bd7c;
-    --color-parchment: #211a11;
-    --color-paper: #15100a;
+    /* Same fix as light mode: parchment lightened and paper darkened so
+       card surfaces are clearly distinct from the page behind them. */
+    --color-parchment: #2b2115;
+    --color-paper: #100c07;
     --color-fairway: #8fa379;
     --color-brown: #0c0805;
-    --color-line: rgba(230, 214, 170, 0.16);
+    --color-line: rgba(230, 214, 170, 0.24);
     --color-shadow: rgba(0, 0, 0, 0.5);
   }
 }

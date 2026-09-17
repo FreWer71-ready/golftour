@@ -27,7 +27,7 @@ export function PlayerPicker({ players }: { players: Player[] }) {
 
   return (
     <div className="mx-auto max-w-sm px-4 pt-14">
-      <div className="text-center text-gold tracking-[0.4em] text-xs">★ ★ ★ ★ ★</div>
+      <div className="text-center text-gold-bright tracking-[0.4em] text-xs">★ ★ ★ ★ ★</div>
       <h1 className="mt-3 text-center font-display text-[32px] text-ink">Vem är du?</h1>
       <p className="mt-2 text-center font-label text-xs uppercase tracking-wide text-maroon">
         Börs · Birdies · Bärs
