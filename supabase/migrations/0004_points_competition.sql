@@ -16,7 +16,9 @@ alter table closest_to_pin add constraint closest_to_pin_distance_positive check
 alter table longest_drive add constraint longest_drive_round_player_unique unique (round_id, player_id);
 alter table closest_to_pin add constraint closest_to_pin_round_player_unique unique (round_id, player_id);
 
-create or replace function fixed_points(pos int)
+-- bigint, not int: every position column here comes from rank(), which
+-- Postgres returns as bigint — an int argument wouldn't match it.
+create or replace function fixed_points(pos bigint)
 returns int
 language sql
 immutable

@@ -93,7 +93,9 @@ create trigger round_scores_set_updated_at
 -- round's Longest Drive and Closest to Pin) pays out 10/8/6/4/2 points for
 -- 1st through 5th place, 0 beyond. Not admin-editable, by design — one
 -- scale, everywhere, so the points competition is never ambiguous.
-create or replace function fixed_points(pos int)
+-- bigint, not int: every position column here comes from rank(), which
+-- Postgres returns as bigint — an int argument wouldn't match it.
+create or replace function fixed_points(pos bigint)
 returns int
 language sql
 immutable
